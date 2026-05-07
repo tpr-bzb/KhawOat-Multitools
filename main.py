@@ -92,19 +92,20 @@ async def main(page: ft.Page):
             lbl_splash_status.value = "🔍 Checking for Professional Updates..."
             page.update()
             
-            # 1. Check version.json first
-            res = requests.get(VERSION_JSON_URL, timeout=10)
+            # 1. Check version.json with Cache Bypass
+            cache_bypass_url = f"{VERSION_JSON_URL}?t={int(time.time())}"
+            res = requests.get(cache_bypass_url, timeout=10)
             if res.status_code == 200:
                 data = res.json()
                 if data["version"] > CURRENT_VERSION:
                     # ✅ Check for Force Setup (v16.5 NEW)
                     if data.get("force_setup"):
+                        # ... (existing force setup logic)
                         lbl_splash_status.value = "⚠️ Critical Update Required!"
                         lbl_splash_status.color = COLOR_ACCENT
                         pb_splash.visible = False
                         page.update()
                         
-                        # Show a button to download
                         import webbrowser
                         download_url = data.get("update_url", "https://github.com/tpr-bzb/KhawOat-Multitools")
                         
@@ -121,18 +122,17 @@ async def main(page: ft.Page):
                         )
                         splash_content.content.controls.append(btn_download)
                         page.update()
-                        
-                        # Wait forever or until closed (stop auto-patching)
                         while True: await asyncio.sleep(1)
 
                     lbl_splash_status.value = "🚀 Pre-loading Professional Assets..."
                     page.update()
                     
-                    # 2. Check for patches
+                    # 2. Check for patches with Cache Bypass for Manifest
                     MANIFEST_URL = VERSION_JSON_URL.replace("version.json", "manifest.json")
+                    cache_bypass_manifest = f"{MANIFEST_URL}?t={int(time.time())}"
                     base_dir = os.path.dirname(sys.executable) if getattr(sys, 'frozen', False) else os.getcwd()
                     
-                    patches, remote_ver = await check_for_patches(MANIFEST_URL, base_dir)
+                    patches, remote_ver = await check_for_patches(cache_bypass_manifest, base_dir)
                     if patches:
                         total = len(patches)
                         for i, patch in enumerate(patches):
