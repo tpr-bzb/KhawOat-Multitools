@@ -1,0 +1,14 @@
+build/
+dist/
+Output/
+__pycache__/
+.venv/
+*.exe
+*.rar
+*.pkg
+*.spec
+*.pyc
+
+# Local Rules & Guides
+rule.md
+PATCHING_GUIDE.md
