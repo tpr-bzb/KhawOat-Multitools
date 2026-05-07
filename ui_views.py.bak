@@ -42,7 +42,7 @@ def nav_btn(text: str, icon_text: str, on_click):
             ft.Container(content=ft.Text(icon_text, size=18), width=30),
             ft.Text(text, size=FONT_SIZE_BODY, weight="w500", color=COLOR_TEXT)
         ], spacing=10),
-        on_click=on_click,
+        on_click=on_nav,
         style=ft.ButtonStyle(
             shape=ft.RoundedRectangleBorder(radius=RADIUS_SM),
             overlay_color={
@@ -53,7 +53,7 @@ def nav_btn(text: str, icon_text: str, on_click):
         )
     )
 
-def build_tool_view(index: int, ui: dict, actions: dict, current_version: str = "1.0", patch_notes: str = ""):
+def build_tool_view(index: int, ui: dict, actions: dict, current_version: str = "1.0"):
     # Standard Card Wrapper for consistency
     def card_container(content, expand=True):
         return ft.Container(
@@ -69,148 +69,114 @@ def build_tool_view(index: int, ui: dict, actions: dict, current_version: str = 
     # --- 🏠 0. Welcome / Dashboard Page ---
     if index == 0:
         def quick_tool_card(title, icon, desc, idx):
-            def on_hover(e):
-                e.control.scale = 1.02 if e.data == "true" else 1.0
-                e.control.border = ft.border.all(2, COLOR_PRIMARY) if e.data == "true" else ft.border.all(1, BORDER_SUBTLE)
-                e.control.update()
-
             return ft.Container(
                 content=ft.Column([
-                    ft.Text(icon, size=24),
-                    ft.Text(title, size=13, weight="bold", color=COLOR_PRIMARY),
-                    ft.Text(desc, size=10, color=COLOR_TEXT_DIM, text_align=ft.TextAlign.CENTER),
-                ], horizontal_alignment=ft.CrossAxisAlignment.CENTER, spacing=3),
+                    ft.Text(icon, size=30),
+                    ft.Text(title, size=16, weight="bold", color=COLOR_PRIMARY),
+                    ft.Text(desc, size=11, color=COLOR_TEXT_DIM, text_align=ft.TextAlign.CENTER),
+                ], horizontal_alignment=ft.CrossAxisAlignment.CENTER, spacing=5),
                 bgcolor=COLOR_SURFACE,
-                padding=12,
+                padding=20,
                 border_radius=RADIUS_MD,
                 border=ft.border.all(1, BORDER_SUBTLE),
                 on_click=actions["nav_tool"],
-                on_hover=on_hover,
                 data=str(idx),
-                width=140,
-                height=110,
+                expand=True,
                 animate=ft.animation.Animation(300, ft.AnimationCurve.DECELERATE),
             )
 
         return ft.Container(
             content=ft.Column([
-                # Hero Header
-                ft.Container(
-                    content=ft.Row([
-                        ft.Column([
-                            ft.Text("ยินดีต้อนรับสู่ศูนย์บัญชาการ", size=14, color=COLOR_SECONDARY, weight="bold"),
-                            ft.Text(ui["greeting_text"], size=28, weight="bold", color=COLOR_TEXT),
-                            ft.Row([
-                                ft.Container(height=3, width=40, bgcolor=COLOR_ACCENT, border_radius=5),
-                                ft.Text("KhawOat Multi-Tools Pro Series", size=12, italic=True, color=COLOR_TEXT_DIM),
-                            ], spacing=10),
-                        ], expand=True),
+                ft.Column([
+                    # Hero Header
+                    ft.Container(
+                        content=ft.Row([
+                            ft.Column([
+                                ft.Text("ยินดีต้อนรับสู่ศูนย์บัญชาการ", size=14, color=COLOR_SECONDARY, weight="bold"),
+                                ft.Text(ui["greeting_text"], size=28, weight="bold", color=COLOR_TEXT),
+                                ft.Row([
+                                    ft.Container(height=3, width=40, bgcolor=COLOR_ACCENT, border_radius=5),
+                                    ft.Text("KhawOat Multi-Tools Pro Series", size=12, italic=True, color=COLOR_TEXT_DIM),
+                                ], spacing=10),
+                            ], expand=True),
+                            ft.Container(
+                                content=ft.Column([
+                                    ft.Text("🕒 Local Time", size=10, color=COLOR_PRIMARY, weight="bold"),
+                                    ui["lbl_clock"]
+                                ], horizontal_alignment=ft.CrossAxisAlignment.END, spacing=0),
+                                padding=15, bgcolor="white05", border_radius=RADIUS_MD, border=ft.border.all(1, BORDER_SUBTLE)
+                            )
+                        ], alignment=ft.MainAxisAlignment.SPACE_BETWEEN, vertical_alignment=ft.CrossAxisAlignment.CENTER),
+                        padding=ft.padding.symmetric(vertical=20)
+                    ),
+
+                    ft.Divider(height=10, color="transparent"),
+
+                    # Quick Access Section
+                    ft.Text("🚀 Quick Access Tools", size=16, weight="bold", color=COLOR_PRIMARY),
+                    ft.Row([
+                        quick_tool_card("JSON Tool", "🧾", "Format & Validate", 3),
+                        quick_tool_card("QR GEN", "🔳", "Create & Save QR", 2),
+                        quick_tool_card("Password Gen", "🔑", "Secure Generator", 7),
+                        quick_tool_card("Time Converter", "⏱️", "Unix & Ticks", 5),
+                        quick_tool_card("Binary Tools", "🧮", "Base Calculation", 4),
+                    ], spacing=15, wrap=True),
+
+                    ft.Container(height=20),
+
+                    # Middle Banner (GIF + Stats)
+                    ft.Row([
+                        ft.Container(
+                            content=ft.Image(src=ui["greeting_gif"], width=200, height=180, fit=ft.ImageFit.CONTAIN),
+                            border_radius=RADIUS_LG, bgcolor="white05", padding=10, expand=2
+                        ),
                         ft.Container(
                             content=ft.Column([
-                                ft.Text("🕒 Local Time", size=10, color=COLOR_PRIMARY, weight="bold"),
-                                ui["lbl_clock"]
-                            ], horizontal_alignment=ft.CrossAxisAlignment.END, spacing=0),
-                            padding=15, bgcolor="white05", border_radius=RADIUS_MD, border=ft.border.all(1, BORDER_SUBTLE)
+                                ft.Text("System Health", size=14, weight="bold", color=COLOR_SECONDARY),
+                                ft.Row([ft.Icon(ft.icons.MEMORY, color=COLOR_PRIMARY, size=16), ft.Text("Ready", color=COLOR_TEXT)]),
+                                ft.Row([ft.Icon(ft.icons.DNS, color=COLOR_PRIMARY, size=16), ft.Text("Online", color=COLOR_TEXT)]),
+                                ft.Row([ft.Icon(ft.icons.SHIELD, color=COLOR_PRIMARY, size=16), ft.Text("Secure", color=COLOR_TEXT)]),
+                                ft.Divider(color=BORDER_SUBTLE),
+                                ft.Text(f"Software Version: {current_version}", size=10, color=COLOR_TEXT_DIM),
+                            ], spacing=10),
+                            padding=20, bgcolor=COLOR_SURFACE, border_radius=RADIUS_LG, border=ft.border.all(1, BORDER_SUBTLE), expand=1
                         )
-                    ], alignment=ft.MainAxisAlignment.SPACE_BETWEEN, vertical_alignment=ft.CrossAxisAlignment.CENTER),
-                    padding=ft.padding.symmetric(vertical=20)
-                ),
+                    ], spacing=20),
 
-                ft.Divider(height=10, color="transparent"),
+                    ft.Container(height=20),
 
-                # Quick Access Section
-                ft.Text("🚀 Quick Access Tools", size=16, weight="bold", color=COLOR_PRIMARY),
-                ft.Row([
-                    quick_tool_card("JSON Tool", "🧾", "Format & Validate", 3),
-                    quick_tool_card("QR GEN", "🔳", "Create & Save QR", 2),
-                    quick_tool_card("Password Gen", "🔑", "Secure Generator", 7),
-                    quick_tool_card("Time Converter", "⏱️", "Unix & Ticks", 5),
-                    quick_tool_card("Binary Tools", "🧮", "Base Calculation", 4),
-                ], spacing=15, wrap=True, alignment=ft.MainAxisAlignment.START),
+                    # Bottom Status Cards
+                    ft.Row([
+                        ft.Container(
+                            content=ft.Row([
+                                ft.Icon(ft.icons.AUTO_FIX_HIGH, color=COLOR_ACCENT),
+                                ft.Column([
+                                    ft.Text("13 Active Tools", size=14, weight="bold"),
+                                    ft.Text("All systems operational", size=11, color="white54"),
+                                ], spacing=0)
+                            ]),
+                            padding=20, bgcolor="white05", border_radius=RADIUS_LG, expand=1, border=ft.border.all(1, "white10")
+                        ),
+                        ft.Container(
+                            content=ft.Row([
+                                ft.Icon(ft.icons.UPDATE, color=COLOR_SECONDARY),
+                                ft.Column([
+                                    ft.Text("Auto-Update", size=14, weight="bold"),
+                                    ft.Text("Checking patches...", size=11, color="white54"),
+                                ], spacing=0)
+                            ]),
+                            padding=20, bgcolor="white05", border_radius=RADIUS_LG, expand=1, border=ft.border.all(1, "white10")
+                        ),
+                    ], spacing=20),
 
-                ft.Container(height=20),
-
-                # Middle Banner (GIF + Stats)
-                ft.Row([
-                    ft.Container(
-                        content=ft.Image(src=ui["greeting_gif"], width=150, height=130, fit=ft.ImageFit.CONTAIN),
-                        border_radius=RADIUS_LG, bgcolor="white05", padding=10, expand=1, alignment=ft.alignment.center,
-                        height=180
-                    ),
-                    ft.Container(
-                        content=ft.Column([
-                            ft.Text("📊 System Health", size=14, weight="bold", color=COLOR_SECONDARY),
-                            ft.Container(height=5),
-                            ft.Row([ft.Icon(ft.icons.MEMORY, color=COLOR_PRIMARY, size=18), ft.Text("System Ready", size=13, color=COLOR_TEXT)], spacing=10),
-                            ft.Row([ft.Icon(ft.icons.DNS, color=COLOR_PRIMARY, size=18), ft.Text("Database Online", size=13, color=COLOR_TEXT)], spacing=10),
-                            ft.Row([ft.Icon(ft.icons.SHIELD, color=COLOR_PRIMARY, size=18), ft.Text("Security Active", size=13, color=COLOR_TEXT)], spacing=10),
-                            ft.Divider(color=BORDER_SUBTLE, height=20),
-                            ft.Row([
-                                ft.Text("Software Version:", size=11, color=COLOR_TEXT_DIM),
-                                ft.Text(current_version, size=11, color=COLOR_PRIMARY, weight="bold"),
-                            ], alignment=ft.MainAxisAlignment.SPACE_BETWEEN),
-                        ], spacing=8, horizontal_alignment=ft.CrossAxisAlignment.START),
-                        padding=25, 
-                        bgcolor=COLOR_SURFACE, 
-                        border_radius=RADIUS_LG, 
-                        border=ft.border.all(1, BORDER_SUBTLE), 
-                        expand=2,
-                        alignment=ft.alignment.center_left,
-                        height=180
-                    )
-                ], spacing=20),
-
-                ft.Container(height=20),
-
-                # Patchnotes / Latest Update Section
-                ft.Container(
-                    content=ft.Column([
-                        ft.Row([
-                            ft.Icon(ft.icons.NEW_RELEASES, color=COLOR_ACCENT, size=20),
-                            ft.Text("Latest Updates / Patch Notes", size=14, weight="bold", color=COLOR_TEXT),
-                        ], spacing=10),
-                        ft.Text(patch_notes or "No patch notes available.", size=12, color=COLOR_TEXT_DIM, italic=True),
-                    ], spacing=10),
-                    padding=20,
-                    bgcolor="white05",
-                    border_radius=RADIUS_MD,
-                    border=ft.border.all(1, "white10"),
-                ),
-
-                ft.Container(height=20),
-
-                # Bottom Status Cards
-                ft.Row([
-                    ft.Container(
-                        content=ft.Row([
-                            ft.Icon(ft.icons.AUTO_FIX_HIGH, color=COLOR_ACCENT),
-                            ft.Column([
-                                ft.Text("13 Active Tools", size=14, weight="bold"),
-                                ft.Text("All systems operational", size=11, color="white54"),
-                            ], spacing=0)
-                        ]),
-                        padding=20, bgcolor="white05", border_radius=RADIUS_LG, expand=1, border=ft.border.all(1, "white10")
-                    ),
-                    ft.Container(
-                        content=ft.Row([
-                            ft.Icon(ft.icons.UPDATE, color=COLOR_SECONDARY),
-                            ft.Column([
-                                ft.Text("Auto-Update", size=14, weight="bold"),
-                                ft.Text("Checking patches...", size=11, color="white54"),
-                            ], spacing=0)
-                        ]),
-                        padding=20, bgcolor="white05", border_radius=RADIUS_LG, expand=1, border=ft.border.all(1, "white10")
-                    ),
-                ], spacing=20),
-
-            ], scroll=ft.ScrollMode.AUTO, expand=True, spacing=10),
+                ], scroll=ft.ScrollMode.AUTO, expand=True, spacing=10)
+            ]),
             padding=30, 
             bgcolor=COLOR_CARD, 
             border_radius=ft.border_radius.only(top_left=RADIUS_LG),
             expand=True,
-            border=ft.Border(left=ft.BorderSide(1, BORDER_SUBTLE), top=ft.BorderSide(1, BORDER_SUBTLE))
+            border=ft.border.only(left=ft.border.BorderSide(1, BORDER_SUBTLE), top=ft.border.BorderSide(1, BORDER_SUBTLE))
         )
-
 
     # --- 🗂️ 1. Merge & Split ---
     if index == 1:

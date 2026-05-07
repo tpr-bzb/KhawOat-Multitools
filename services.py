@@ -3,6 +3,8 @@ import re
 import secrets
 import string
 import csv
+import json
+import requests
 import pandas as pd
 import qrcode
 import io

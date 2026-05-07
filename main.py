@@ -12,10 +12,18 @@ from ui_config import (
     COLOR_BG,
     COLOR_SIDEBAR,
     COLOR_CARD,
+    COLOR_SURFACE,
     COLOR_PRIMARY,
     COLOR_SECONDARY,
     COLOR_ACCENT,
     COLOR_TEXT,
+    COLOR_TEXT_DIM,
+    COLOR_ERROR,
+    COLOR_SUCCESS,
+    RADIUS_SM,
+    RADIUS_MD,
+    RADIUS_LG,
+    BORDER_SUBTLE,
     configure_page,
 )
 from ui_views import build_tool_view, nav_btn
@@ -42,9 +50,9 @@ from services import (
     decode_jwt,
     optimize_image,
 )
-from datetime import datetime
+from datetime import datetime, timezone
 
-CURRENT_VERSION = "16.5"
+CURRENT_VERSION = "16.6"
 VERSION_JSON_URL = "https://raw.githubusercontent.com/tpr-bzb/KhawOat-Multitools/main/version.json"
 
 async def main(page: ft.Page):
@@ -52,19 +60,19 @@ async def main(page: ft.Page):
     init_start_time = time.time()
     
     # --- 🌊 0. Splash Screen Configuration ---
-    lbl_splash_status = ft.Text("กำลังเตรียมความพร้อมของระบบ...", size=14, italic=True, color="white54")
+    lbl_splash_status = ft.Text("Initializing Pro Systems...", size=14, italic=True, color=COLOR_TEXT_DIM)
     pb_splash = ft.ProgressBar(width=300, color=COLOR_PRIMARY, bgcolor="white10", value=0)
 
     splash_content = ft.Container(
         content=ft.Column([
-            ft.Text("🛠️", size=80), 
-            ft.Text("KHAWOAT MULTI-TOOLS", size=24, weight="bold", color=COLOR_PRIMARY), 
+            ft.Text("🛠️", size=100), 
+            ft.Text("KHAWOAT MULTI-TOOLS PRO", size=32, weight="bold", color=COLOR_PRIMARY), 
             lbl_splash_status,
-            ft.Container(height=20),
+            ft.Container(height=30),
             pb_splash, 
         ], alignment=ft.MainAxisAlignment.CENTER, horizontal_alignment=ft.CrossAxisAlignment.CENTER),
         expand=True,
-        bgcolor="#1A1D1A", 
+        bgcolor=COLOR_BG, 
         alignment=ft.alignment.center,
     )
 
@@ -81,7 +89,7 @@ async def main(page: ft.Page):
     import sys
     async def run_auto_update():
         try:
-            lbl_splash_status.value = "🔍 กำลังตรวจสอบการอัพเดต..."
+            lbl_splash_status.value = "🔍 Checking for Professional Updates..."
             page.update()
             
             # 1. Check version.json first
@@ -91,8 +99,8 @@ async def main(page: ft.Page):
                 if data["version"] > CURRENT_VERSION:
                     # ✅ Check for Force Setup (v16.5 NEW)
                     if data.get("force_setup"):
-                        lbl_splash_status.value = "⚠️ พบการอัปเดตสำคัญ! กรุณาติดตั้งเวอร์ชันใหม่"
-                        lbl_splash_status.color = "orange"
+                        lbl_splash_status.value = "⚠️ Critical Update Required!"
+                        lbl_splash_status.color = COLOR_ACCENT
                         pb_splash.visible = False
                         page.update()
                         
@@ -104,11 +112,12 @@ async def main(page: ft.Page):
                             webbrowser.open(download_url)
                         
                         btn_download = ft.ElevatedButton(
-                            "🌐 ดาวน์โหลดตัวติดตั้งใหม่", 
+                            "🌐 Download Installer", 
                             icon=ft.icons.DOWNLOAD, 
                             on_click=open_download,
                             bgcolor=COLOR_PRIMARY,
-                            color="black"
+                            color="black",
+                            height=50
                         )
                         splash_content.content.controls.append(btn_download)
                         page.update()
@@ -116,7 +125,7 @@ async def main(page: ft.Page):
                         # Wait forever or until closed (stop auto-patching)
                         while True: await asyncio.sleep(1)
 
-                    lbl_splash_status.value = "กรุณารอสักครู่ โปรแกรมกำลังอัพเดต..."
+                    lbl_splash_status.value = "🚀 Pre-loading Professional Assets..."
                     page.update()
                     
                     # 2. Check for patches
@@ -127,12 +136,12 @@ async def main(page: ft.Page):
                     if patches:
                         total = len(patches)
                         for i, patch in enumerate(patches):
-                            lbl_splash_status.value = f"📦 กำลังดาวน์โหลด: {patch['rel_path']} ({i+1}/{total})"
+                            lbl_splash_status.value = f"📦 Patching: {patch['rel_path']} ({i+1}/{total})"
                             pb_splash.value = (i + 1) / total
                             page.update()
                             await apply_patch(patch['url'], os.path.join(base_dir, patch['rel_path']))
                         
-                        lbl_splash_status.value = "✨ อัพเดตเสร็จสิ้น! กำลังเริ่มโปรแกรมใหม่..."
+                        lbl_splash_status.value = "✨ Update Complete! Restarting..."
                         page.update()
                         await asyncio.sleep(1)
                         # Restart
@@ -141,12 +150,12 @@ async def main(page: ft.Page):
                         else:
                             os.execl(sys.executable, sys.executable, __file__, *sys.argv)
         except Exception as e:
-            lbl_splash_status.value = f"⚠️ ไม่สามารถตรวจสอบการอัพเดตได้: {e}"
+            lbl_splash_status.value = f"⚠️ Offline Mode: {e}"
             page.update()
             await asyncio.sleep(1)
 
     await run_auto_update()
-    lbl_splash_status.value = "🚀 กำลังเข้าสู่โปรแกรม..."
+    lbl_splash_status.value = "🎯 Ready to Deploy..."
     pb_splash.value = 1
     page.update()
     await asyncio.sleep(0.5)
@@ -260,13 +269,19 @@ async def main(page: ft.Page):
         if index == 0: # Home
             def get_greeting_data():
                 hour = datetime.now().hour
-                if 5 <= hour < 12: return ("อรุณสวัสดิ์ครับ!! สำหรับงานวันนี้ต้องราบรื่น! สาธุจ้า !!", "/morning.gif")
-                elif 12 <= hour < 18: return ("สวัสดียามบ่ายครับ!! พักสายตาบ้างนะครับ แต่ถ้าไหวก็ลุยงานต่อเลย", "/afternoon.gif")
-                else: return ("ดึกแล้ว... พลังกายเริ่มถดถอย อย่าลืมพักผ่อนนะครับ", "/night.gif")
+                if 5 <= hour < 12: return ("อรุณสวัสดิ์ครับ! พร้อมลุยงานเช้านี้แล้วจ้า", "morning.gif")
+                elif 12 <= hour < 18: return ("สวัสดียามบ่ายครับ! อย่าลืมดื่มน้ำพักสายตานะ", "afternoon.gif")
+                else: return ("คืนนี้อีกยาวไกล... รักษาสุขภาพด้วยนะครับ", "night.gif")
             
             gt, gg = get_greeting_data()
             ui["greeting_text"] = gt
             ui["greeting_gif"] = gg
+
+            # Actions for Quick Tools
+            async def nav_to_tool(e):
+                idx = int(e.control.data)
+                await update_view(idx)
+            actions["nav_tool"] = nav_to_tool
 
         elif index == 12: # JWT Decoder
             ui["txt_jwt_input"] = ft.TextField(label="JWT Token", multiline=True, min_lines=5, border_color=COLOR_PRIMARY, bgcolor="#252B25", border_radius=12)
@@ -464,6 +479,7 @@ async def main(page: ft.Page):
             ui["txt_qr"] = ft.TextField(label="URL หรือ ข้อความ", border_color=COLOR_PRIMARY, bgcolor="#252B25", border_radius=12)
             ui["img_qr"] = ft.Image(src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==", width=250, height=250, visible=False)
             ui["lbl_qr_status"] = ft.Text("", color="white54")
+            ui["qr_container"] = ft.Container(content=ui["img_qr"], alignment=ft.alignment.center, padding=20, bgcolor="white", border_radius=RADIUS_MD, visible=False)
 
             async def run_gen_qr(e):
                 if await guard_busy(): return
@@ -473,8 +489,10 @@ async def main(page: ft.Page):
                     if b64_qr:
                         ui["img_qr"].src_base64 = b64_qr
                         ui["img_qr"].visible = True
+                        ui["qr_container"].visible = True
                         ui["lbl_qr_status"].value = "✅ สำเร็จ"
                         ui["lbl_qr_status"].color = COLOR_SECONDARY
+                        await safe_update(ui["qr_container"])
                         await show_toast("สร้าง QR สำเร็จ")
                 except Exception as ex:
                     ui["lbl_qr_status"].value = f"❌ Error: {ex}"
@@ -491,12 +509,12 @@ async def main(page: ft.Page):
                 if await guard_busy(): return
                 if not ui["img_qr"].src_base64: await show_toast("สร้าง QR ก่อน", False); return
                 current_fp_context[fp_save] = {"ui": ft.Control(), "type": "save", "callback": do_save_qr}
-                await fp_save.save_file_async(initial_file="qrcode.png", file_type=ft.FilePickerFileType.IMAGE, allowed_extensions=["png"])
+                await fp_save.save_file_async(file_name="qrcode.png", file_type=ft.FilePickerFileType.IMAGE, allowed_extensions=["png"])
 
             actions["run_gen_qr"] = run_gen_qr; actions["btn_save_qr"] = btn_save_qr
 
         elif index == 3: # JSON Tool
-            ui["txt_line_numbers"] = ft.TextField(value="1", multiline=True, read_only=True, width=55, text_size=14, text_align=ft.TextAlign.RIGHT, border=ft.BorderSide(0, "transparent"), bgcolor=ft.colors.TRANSPARENT, color=COLOR_PRIMARY, text_style=ft.TextStyle(font_family="Consolas", height=1.5), content_padding=ft.padding.only(top=12, right=10, bottom=12))
+            ui["txt_line_numbers"] = ft.TextField(value="1", multiline=True, read_only=True, width=55, text_size=14, text_align=ft.TextAlign.RIGHT, border=ft.InputBorder.NONE, bgcolor=ft.colors.TRANSPARENT, color=COLOR_PRIMARY, text_style=ft.TextStyle(font_family="Consolas", height=1.5), content_padding=ft.padding.only(top=12, right=10, bottom=12))
             ui["tree_container"] = ft.Column(scroll=ft.ScrollMode.ALWAYS, expand=True)
             
             async def update_tree():
@@ -556,7 +574,7 @@ async def main(page: ft.Page):
                 # For large JSON, we might want to only update on Format/submit
                 # await update_tree()
 
-            ui["txt_json_input"] = ft.TextField(multiline=True, min_lines=20, expand=True, border=ft.BorderSide(0, "transparent"), bgcolor="#1E231E", text_size=14, text_style=ft.TextStyle(font_family="Consolas", height=1.5), on_change=sync_and_detect, content_padding=ft.padding.only(top=12, left=10, right=10, bottom=12))
+            ui["txt_json_input"] = ft.TextField(multiline=True, min_lines=20, expand=True, border=ft.InputBorder.NONE, bgcolor="#1E231E", text_size=14, text_style=ft.TextStyle(font_family="Consolas", height=1.5), on_change=sync_and_detect, content_padding=ft.padding.only(top=12, left=10, right=10, bottom=12))
 
             async def run_fmt_json(e):
                 if await guard_busy(): return
@@ -756,8 +774,13 @@ async def main(page: ft.Page):
                 ui["txt_epoch"].value = "1714272000"; ui["txt_ticks"].value = "638498592000000000"; await show_toast("📋 โหลดตัวอย่างแล้ว")
                 await safe_update(ui["txt_epoch"]); await safe_update(ui["txt_ticks"])
             async def ld_cur(e):
-                now = datetime.now(); ui["txt_epoch"].value = str(int(now.timestamp())); ticks = (now - datetime(1, 1, 1)).total_seconds() * 10_000_000
-                ui["txt_ticks"].value = str(int(ticks)); await show_toast("🕒 ดึงเวลาปัจจุบันแล้ว")
+                now = datetime.now()
+                now_utc = datetime.now(timezone.utc)
+                ui["txt_epoch"].value = str(int(now.timestamp()))
+                # Calculate UTC Ticks: (seconds since 1970 * 10^7) + ticks at 1970
+                ticks = (int(now_utc.timestamp()) * 10_000_000) + 621355968000000000
+                ui["txt_ticks"].value = str(int(ticks))
+                await show_toast("🕒 ดึงเวลาปัจจุบันแล้ว")
                 await safe_update(ui["txt_epoch"]); await safe_update(ui["txt_ticks"])
             async def clr_t(e): 
                 ui["txt_epoch"].value = ""; ui["lbl_epoch"].value = "Local Time: -"; ui["txt_ticks"].value = ""; ui["lbl_ticks"].value = "Local Time: -"; await show_toast("🗑️ ล้างแล้ว")
@@ -875,11 +898,11 @@ async def main(page: ft.Page):
             actions["btn_open_hidden"] = op_h; actions["btn_clear_hidden"] = cl_h; actions["run_check_hidden"] = run_chk; actions["run_visual_check"] = run_vis; actions["run_save_replace_hidden"] = run_save; actions["run_clean_hidden"] = run_clean; actions["run_clear_hidden_all"] = clr_all; actions["btn_copy_clean"] = cp_h
 
         elif index == 9: # Smart Formatter
-            ui["txt_fmt_ticket"] = ft.TextField(label="เลข Ticket / Case No.", hint_text="12345", width=180, border_color=COLOR_PRIMARY, bgcolor="#252B25", border_radius=12)
-            ui["txt_fmt_subject"] = ft.TextField(label="หัวข้อ (Subject)", hint_text="ชื่อโปรเจกต์...", expand=True, border_color=COLOR_PRIMARY, bgcolor="#252B25", border_radius=12)
-            ui["txt_fmt_date"] = ft.TextField(label="วันที่ (Date)", hint_text="เช่น 28/04/2026", width=180, border_color=COLOR_PRIMARY, bgcolor="#252B25", border_radius=12)
-            ui["txt_fmt_input"] = ft.TextField(label="คำตอบจาก Support", multiline=True, border_color=COLOR_PRIMARY, bgcolor="#252B25", border_radius=12)
-            ui["txt_fmt_res"] = ft.TextField(label="ผลลัพธ์", multiline=True, read_only=True, expand=True, border_color="white10", bgcolor="#181C18", text_style=ft.TextStyle(size=15, font_family="Tahoma", height=1.5))
+            ui["txt_fmt_ticket"] = ft.TextField(label="เลข Ticket", hint_text="12345", width=180, border_color=COLOR_PRIMARY, bgcolor="#181C18", border_radius=8, text_size=13)
+            ui["txt_fmt_subject"] = ft.TextField(label="หัวข้อ (Subject)", hint_text="เช่น [BKK] ปัญหาการใช้งาน...", expand=True, border_color=COLOR_PRIMARY, bgcolor="#181C18", border_radius=8, text_size=13)
+            ui["txt_fmt_date"] = ft.TextField(label="วันที่", hint_text="เช่น 28/04/2026", width=180, border_color=COLOR_PRIMARY, bgcolor="#181C18", border_radius=8, text_size=13)
+            ui["txt_fmt_input"] = ft.TextField(label="คำตอบจาก Support", multiline=True, min_lines=3, max_lines=3, border_color=COLOR_PRIMARY, bgcolor="#181C18", border_radius=8, text_size=13)
+            ui["txt_fmt_res"] = ft.TextField(label="ผลลัพธ์ (Copy ไปใช้ได้เลย)", multiline=True, read_only=True, expand=True, border_color=COLOR_SECONDARY, bgcolor="#0A0C0A", text_style=ft.TextStyle(size=14, font_family="Tahoma", height=1.5), content_padding=15)
             
             TMPS = {
                 "1": "Dear Valued Customer,\n\nBuzzebees Application Support acknowledged your request and recorded it in our system already. Please see information below for reference.\n\nCase No. {ticket_no} Subject “{subject}”\n\nThis case is in the progress of investigation/assigning to specialist at the moment. Our specialist will contact you with in 3-5 days.\n\nYours sincerely,\nBuzzebees Application Support\nEmail: app-support@buzzebees.com",
@@ -891,7 +914,7 @@ async def main(page: ft.Page):
                 "7": "ทางทีมได้รับ Ticket : {ticket_no} แล้วเรียบร้อยค่ะ อย่างไรก็ตามทางทีมจะเร่งประสานงานตรวจสอบให้ ตามรายละเอียดที่ได้รับ หากมีความคืบหน้าอย่างไรทางทีมจะแจ้งให้ทราบอีกครั้งค่ะ"
             }
 
-            async def apply(e):
+            async def apply_template(e):
                 t_id = e.control.data
                 ticket = ui["txt_fmt_ticket"].value.strip()
                 subject = ui["txt_fmt_subject"].value.strip()
@@ -900,41 +923,44 @@ async def main(page: ft.Page):
                 try:
                     if t_id == "1":
                         if not ticket or not subject:
-                            await show_toast("⚠️ กรุณากรอกเลข Ticket และ Subject ก่อนครับ", False); return
+                            await show_toast("⚠️ กรุณากรอก Ticket No. และ Subject", False); return
                         ui["txt_fmt_res"].value = TMPS["1"].format(ticket_no=ticket, subject=subject)
                     elif t_id == "2":
                         if not ticket or not date_val:
-                            await show_toast("⚠️ กรุณากรอกเลข Ticket และ วันที่ ก่อนครับ", False); return
+                            await show_toast("⚠️ กรุณากรอก Ticket No. และ วันที่", False); return
                         ui["txt_fmt_res"].value = TMPS["2"].format(ticket_no=ticket, date=date_val)
                     elif t_id == "7":
                         if not ticket:
-                            await show_toast("⚠️ กรุณากรอกเลข Ticket ก่อนครับ", False); return
+                            await show_toast("⚠️ กรุณากรอก Ticket No.", False); return
                         ui["txt_fmt_res"].value = TMPS["7"].format(ticket_no=ticket)
                     else:
                         ui["txt_fmt_res"].value = TMPS[t_id]
                     
-                    await show_toast(f"✨ ใช้ Template #{t_id} เรียบร้อย")
                     await safe_update(ui["txt_fmt_res"])
+                    await show_toast(f"✅ ใช้ Template #{t_id}")
                 except Exception as ex:
-                    await show_toast(f"❌ เกิดข้อผิดพลาด: {ex}", False)
+                    await show_toast(f"❌ Template Error: {ex}", False)
 
-            async def cp_f(e):
-                if not ui["txt_fmt_res"].value: await show_toast("⚠️ ไม่มีข้อมูลให้คัดลอกครับ", False); return
+            async def copy_output(e):
+                if not ui["txt_fmt_res"].value: return
                 page.set_clipboard(ui["txt_fmt_res"].value)
                 await show_toast("📋 คัดลอกแล้ว")
 
-            async def cl_f(e): 
-                ui["txt_fmt_ticket"].value = ""; ui["txt_fmt_subject"].value = ""; ui["txt_fmt_date"].value = ""; ui["txt_fmt_res"].value = ""; ui["txt_fmt_input"].value = ""
-                await safe_update(ui["txt_fmt_ticket"]); await safe_update(ui["txt_fmt_subject"]); await safe_update(ui["txt_fmt_date"]); await safe_update(ui["txt_fmt_res"]); await safe_update(ui["txt_fmt_input"])
-
-            async def fm_m(e): 
-                ans = ui["txt_fmt_input"].value.strip()
-                if not ans: await show_toast("⚠️ กรุณากรอกคำตอบก่อนครับ", False); return
-                ui["txt_fmt_res"].value = f"เรียน ทีมที่เกี่ยวข้อง\n\n          {ans}\n\n"
-                await show_toast("📧 เรียบร้อย")
+            async def clear_fields(e):
+                ui["txt_fmt_ticket"].value = ""; ui["txt_fmt_subject"].value = ""; ui["txt_fmt_date"].value = ""
+                ui["txt_fmt_input"].value = ""; ui["txt_fmt_res"].value = ""
+                await safe_update(ui["txt_fmt_ticket"]); await safe_update(ui["txt_fmt_subject"])
+                await safe_update(ui["txt_fmt_date"]); await safe_update(ui["txt_fmt_input"])
                 await safe_update(ui["txt_fmt_res"])
 
-            actions["apply_fmt"] = apply; actions["btn_copy_fmt"] = cp_f; actions["run_clear_fmt"] = cl_f; actions["run_format_email"] = fm_m
+            async def format_custom(e):
+                ans = ui["txt_fmt_input"].value.strip()
+                if not ans: return
+                ui["txt_fmt_res"].value = f"เรียน ทีมที่เกี่ยวข้อง\n\n          {ans}\n\nขอบคุณค่ะ"
+                await safe_update(ui["txt_fmt_res"])
+                await show_toast("📧 จัดรูปแบบคำตอบแล้ว")
+
+            actions["apply_fmt"] = apply_template; actions["btn_copy_fmt"] = copy_output; actions["run_clear_fmt"] = clear_fields; actions["run_format_email"] = format_custom
 
         elif index == 10: # Bit Finder
             ui["txt_bin_in"] = ft.TextField(label="วางชุดตัวเลข (เช่น 010100001)", multiline=True, expand=True, border_color=COLOR_PRIMARY, bgcolor="#252B25", border_radius=12)
@@ -1052,9 +1078,18 @@ async def main(page: ft.Page):
 
     # --- 🏗️ View Builder ---
     content_area = ft.Column(expand=True)
+    
+    # Load Patchnotes from local version.json
+    try:
+        with open("version.json", "r", encoding="utf-8") as f:
+            v_data = json.load(f)
+            CURRENT_PATCH_NOTES = v_data.get("change_log", "")
+    except:
+        CURRENT_PATCH_NOTES = ""
+
     async def update_view(index):
         content_area.controls.clear(); ui, actions = await get_tool_assets(index)
-        view = build_tool_view(index, ui, actions)
+        view = build_tool_view(index, ui, actions, current_version=CURRENT_VERSION, patch_notes=CURRENT_PATCH_NOTES)
         if isinstance(view, ft.Container): view.expand = True
         content_area.controls.append(view); await page.update_async()
 
@@ -1081,7 +1116,31 @@ async def main(page: ft.Page):
     nav_img = nav_btn(" Image Optimizer", "🖼️", make_nav(13))
     nav_controls.extend([nav_home, nav_merge, nav_qr, nav_json, nav_binary, nav_time, nav_b64, nav_pass, nav_hidden, nav_fmt, nav_bit_finder, nav_compare, nav_jwt, nav_img])
 
-    sidebar = ft.Container(content=ft.Column([ft.Container(content=ft.Row([ft.Text("🛠️", size=30, color=COLOR_PRIMARY), ft.Text(f"KhawOat\nMulti-Tools\nv{CURRENT_VERSION}", size=22, weight="bold")]), padding=ft.padding.only(bottom=30)), nav_home, ft.Divider(color="white10"), nav_merge, nav_qr, nav_json, nav_binary, nav_time, nav_b64, nav_pass, nav_hidden, nav_fmt, nav_bit_finder, nav_compare, nav_jwt, nav_img], spacing=10, scroll=ft.ScrollMode.AUTO), width=280, bgcolor=COLOR_SIDEBAR, padding=30)
+    sidebar = ft.Container(
+        content=ft.Column([
+            ft.Container(
+                content=ft.Row([
+                    ft.Text("🛠️", size=40, color=COLOR_PRIMARY),
+                    ft.Column([
+                        ft.Text("KhawOat", size=18, weight="bold", color=COLOR_TEXT),
+                        ft.Text("Multi-Tools Pro", size=12, color=COLOR_PRIMARY),
+                        ft.Text(f"v{CURRENT_VERSION}", size=10, color=COLOR_TEXT_DIM),
+                    ], spacing=0)
+                ]),
+                padding=ft.padding.only(bottom=30, top=10)
+            ),
+            nav_home,
+            ft.Divider(color=BORDER_SUBTLE, height=40),
+            ft.Column([
+                nav_merge, nav_qr, nav_json, nav_binary, nav_time, 
+                nav_b64, nav_pass, nav_hidden, nav_fmt, 
+                nav_bit_finder, nav_compare, nav_jwt, nav_img
+            ], spacing=2, scroll=ft.ScrollMode.AUTO, expand=True),
+        ], spacing=0),
+        width=300,
+        bgcolor=COLOR_SIDEBAR,
+        padding=20,
+    )
     
     page.add(ft.Row([sidebar, ft.Container(content=content_area, expand=True)], expand=True, spacing=0, vertical_alignment=ft.CrossAxisAlignment.STRETCH))
     

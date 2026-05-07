@@ -1,6 +1,6 @@
 {
-  "version": "16.5",
-  "force_setup": true,
-  "update_url": "https://github.com/tpr-bzb/KhawOat-Multitools/releases/download/v16.5/KhawOat_MultiTools_v16.5_Setup.exe",
-  "change_log": "🔥 BIG UPDATE v16.5: เพิ่มเครื่องมือ JWT Decoder และ Image Optimizer (ต้องติดตั้งใหม่เนื่องจากมีการเพิ่ม Library)"
+  "version": "16.6",
+  "force_setup": false,
+  "update_url": "https://github.com/tpr-bzb/KhawOat-Multitools/releases",
+  "change_log": "💎 PRO REDESIGN v16.6: ปรับโฉมใหม่หมดจดสไตล์ Modern Midnight, เพิ่มระบบ Glassmorphism, ปรับปรุง Sidebar และ Typography ให้ดูเป็นมืออาชีพยิ่งขึ้น"
 }
