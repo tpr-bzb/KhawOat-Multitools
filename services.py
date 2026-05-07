@@ -341,6 +341,51 @@ def get_text_diff(text1: str, text2: str):
     diff = list(d.compare(text1.splitlines(), text2.splitlines()))
     return diff
 
+def decode_jwt(token: str) -> dict:
+    """Decodes JWT Header and Payload without verification."""
+    try:
+        parts = token.split('.')
+        if len(parts) != 3:
+            return {"error": "Invalid JWT format (must have 3 parts)"}
+        
+        def b64_decode(data):
+            missing_padding = len(data) % 4
+            if missing_padding:
+                data += '=' * (4 - missing_padding)
+            return base64.b64decode(data).decode('utf-8')
+
+        header = json.loads(b64_decode(parts[0]))
+        payload = json.loads(b64_decode(parts[1]))
+        
+        return {
+            "header": header,
+            "payload": payload,
+            "signature": parts[2]
+        }
+    except Exception as e:
+        return {"error": f"Decoding failed: {str(e)}"}
+
+try:
+    from PIL import Image
+    HAS_PILLOW = True
+except ImportError:
+    HAS_PILLOW = False
+
+def optimize_image(input_path: str, output_path: str, quality: int = 80, target_format: str = None):
+    """Optimizes an image by reducing quality or converting format."""
+    if not HAS_PILLOW:
+        return False, "Library 'Pillow' is not installed. Please run 'pip install Pillow'."
+    try:
+        with Image.open(input_path) as img:
+            if img.mode in ("RGBA", "P") and target_format == "JPEG":
+                img = img.convert("RGB")
+            
+            save_format = target_format if target_format else img.format
+            img.save(output_path, format=save_format, quality=quality, optimize=True)
+            return True, os.path.getsize(output_path)
+    except Exception as e:
+        return False, str(e)
+
 def calculate_local_hash(filepath):
     """Calculate SHA256 of a local file."""
     if not os.path.exists(filepath):

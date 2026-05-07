@@ -3,7 +3,7 @@
 ; Non-commercial use only
 
 #define MyAppName "KhawOat Multi-Tools"
-#define MyAppVersion "16.4"
+#define MyAppVersion "16.5"
 #define MyAppPublisher "Khowt Tools"
 #define MyAppExeName "KhawOat_MultiTools.exe"
 #define MyAppAssocName MyAppName + " File"
@@ -34,7 +34,7 @@ ChangesAssociations=yes
 DisableProgramGroupPage=yes
 ; Uncomment the following line to run in non administrative install mode (install for current user only).
 ;PrivilegesRequired=lowest
-OutputBaseFilename=KhawOat_MultiTools_v16.4_Setup
+OutputBaseFilename=KhawOat_MultiTools_v16.5_Setup
 SetupIconFile=D:\MyProject\ToolsApplicationSupport\tools.ico
 SolidCompression=yes
 WizardStyle=classic windows11

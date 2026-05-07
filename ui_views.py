@@ -69,7 +69,7 @@ def build_tool_view(index: int, ui: dict, actions: dict):
                     ft.Row([
                     ft.Container(
                         content=ft.Column([
-                            ft.Text("11", size=40, weight="bold", color=COLOR_SECONDARY),
+                            ft.Text("13", size=40, weight="bold", color=COLOR_SECONDARY),
                             ft.Text("Active Tools", size=14, weight="bold")
                         ], horizontal_alignment=ft.CrossAxisAlignment.CENTER),
 
@@ -550,6 +550,81 @@ def build_tool_view(index: int, ui: dict, actions: dict):
                     bgcolor="#161A16",
                 )
             ], expand=True, spacing=15),
+            padding=40, bgcolor=COLOR_CARD, border_radius=0, expand=True
+        )
+
+    # --- 🔐 12. JWT Decoder (NEW v16.5) ---
+    if index == 12:
+        return ft.Container(
+            content=ft.Column([
+                section_title("JWT Decoder", "🔐"),
+                ft.Text("💡 Paste your JWT token to decode Header and Payload.", color="white54"),
+                
+                ui["txt_jwt_input"],
+                
+                ft.Row([
+                    ft.ElevatedButton("🔓 Decode JWT", icon=ft.icons.UNARCHIVE, on_click=actions["run_decode_jwt"], bgcolor=COLOR_PRIMARY, color="black", height=45),
+                    ft.ElevatedButton("🗑️ Clear", icon=ft.icons.DELETE_OUTLINE, on_click=actions["run_clear_jwt"], bgcolor="red700", height=45),
+                ], spacing=15),
+
+                ft.Divider(color="white10"),
+
+                ft.Row([
+                    ft.Column([
+                        ft.Text("Header", weight="bold", color=COLOR_PRIMARY),
+                        ui["txt_jwt_header"]
+                    ], expand=1),
+                    ft.Column([
+                        ft.Text("Payload", weight="bold", color=COLOR_SECONDARY),
+                        ui["txt_jwt_payload"]
+                    ], expand=2),
+                ], expand=True, spacing=20),
+
+                ui["lbl_jwt_status"]
+            ], expand=True, spacing=15),
+            padding=40, bgcolor=COLOR_CARD, border_radius=0, expand=True
+        )
+
+    # --- 🖼️ 13. Image Optimizer (NEW v16.5) ---
+    if index == 13:
+        return ft.Container(
+            content=ft.Column([
+                section_title("Image Optimizer", "🖼️"),
+                ft.Text("💡 Reduce image size or convert format (PNG/JPG).", color="white54"),
+                
+                ft.Row([
+                    ui["txt_img_src"],
+                    ft.ElevatedButton("เลือกไฟล์รูป", icon=ft.icons.IMAGE, on_click=actions["btn_open_img"], bgcolor=COLOR_SECONDARY, color="black"),
+                ]),
+
+                ft.Row([
+                    ft.Column([
+                        ft.Text("Quality (1-100)", weight="bold"),
+                        ui["slider_img_quality"],
+                    ], expand=1),
+                    ft.Column([
+                        ft.Text("Target Format", weight="bold"),
+                        ui["dd_img_format"],
+                    ], expand=1),
+                ], spacing=20),
+
+                ft.ElevatedButton("🚀 Optimize & Save", icon=ft.icons.COMPRESS, on_click=actions["run_optimize_img"], bgcolor=COLOR_ACCENT, color=COLOR_BG, height=50, width=float("inf")),
+                
+                ui["lbl_img_status"],
+                
+                ft.Container(
+                    content=ft.Column([
+                        ft.Text("Preview (Original)", weight="bold", color="white54"),
+                        ui["img_preview"]
+                    ], horizontal_alignment=ft.CrossAxisAlignment.CENTER),
+                    expand=True,
+                    border=ft.border.all(1, "white10"),
+                    border_radius=10,
+                    padding=10,
+                    bgcolor="#161A16",
+                    visible=False # Hidden until image selected
+                )
+            ], expand=True, spacing=15, scroll=ft.ScrollMode.AUTO),
             padding=40, bgcolor=COLOR_CARD, border_radius=0, expand=True
         )
 

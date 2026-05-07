@@ -39,10 +39,12 @@ from services import (
     csv_to_json_data,
     compare_json,
     get_text_diff,
+    decode_jwt,
+    optimize_image,
 )
 from datetime import datetime
 
-CURRENT_VERSION = "16.4"
+CURRENT_VERSION = "16.5"
 VERSION_JSON_URL = "https://raw.githubusercontent.com/tpr-bzb/KhawOat-Multitools/main/version.json"
 
 async def main(page: ft.Page):
@@ -87,6 +89,33 @@ async def main(page: ft.Page):
             if res.status_code == 200:
                 data = res.json()
                 if data["version"] > CURRENT_VERSION:
+                    # ✅ Check for Force Setup (v16.5 NEW)
+                    if data.get("force_setup"):
+                        lbl_splash_status.value = "⚠️ พบการอัปเดตสำคัญ! กรุณาติดตั้งเวอร์ชันใหม่"
+                        lbl_splash_status.color = "orange"
+                        pb_splash.visible = False
+                        page.update()
+                        
+                        # Show a button to download
+                        import webbrowser
+                        download_url = data.get("update_url", "https://github.com/tpr-bzb/KhawOat-Multitools")
+                        
+                        async def open_download(e):
+                            webbrowser.open(download_url)
+                        
+                        btn_download = ft.ElevatedButton(
+                            "🌐 ดาวน์โหลดตัวติดตั้งใหม่", 
+                            icon=ft.icons.DOWNLOAD, 
+                            on_click=open_download,
+                            bgcolor=COLOR_PRIMARY,
+                            color="black"
+                        )
+                        splash_content.content.controls.append(btn_download)
+                        page.update()
+                        
+                        # Wait forever or until closed (stop auto-patching)
+                        while True: await asyncio.sleep(1)
+
                     lbl_splash_status.value = "กรุณารอสักครู่ โปรแกรมกำลังอัพเดต..."
                     page.update()
                     
@@ -238,6 +267,102 @@ async def main(page: ft.Page):
             gt, gg = get_greeting_data()
             ui["greeting_text"] = gt
             ui["greeting_gif"] = gg
+
+        elif index == 12: # JWT Decoder
+            ui["txt_jwt_input"] = ft.TextField(label="JWT Token", multiline=True, min_lines=5, border_color=COLOR_PRIMARY, bgcolor="#252B25", border_radius=12)
+            ui["txt_jwt_header"] = ft.TextField(label="Header (JSON)", multiline=True, read_only=True, min_lines=5, border_color=COLOR_PRIMARY, bgcolor="#181C18", text_style=ft.TextStyle(font_family="Consolas"))
+            ui["txt_jwt_payload"] = ft.TextField(label="Payload (JSON)", multiline=True, read_only=True, min_lines=10, border_color=COLOR_SECONDARY, bgcolor="#181C18", text_style=ft.TextStyle(font_family="Consolas"))
+            ui["lbl_jwt_status"] = ft.Text("", weight="bold")
+
+            async def run_decode_jwt(e):
+                if await guard_busy(): return
+                token = ui["txt_jwt_input"].value.strip()
+                if not token: return
+                
+                result = decode_jwt(token)
+                if "error" in result:
+                    ui["lbl_jwt_status"].value = f"❌ {result['error']}"
+                    ui["lbl_jwt_status"].color = "red"
+                else:
+                    ui["txt_jwt_header"].value = json.dumps(result["header"], indent=4)
+                    ui["txt_jwt_payload"].value = json.dumps(result["payload"], indent=4)
+                    
+                    # Check expiration
+                    status_text = "✅ Decoded Successfully"
+                    status_color = COLOR_SECONDARY
+                    
+                    if "exp" in result["payload"]:
+                        exp_time = result["payload"]["exp"]
+                        now = time.time()
+                        if now > exp_time:
+                            status_text += " ⚠️ (TOKEN EXPIRED!)"
+                            status_color = ft.colors.RED_400
+                        else:
+                            rem = exp_time - now
+                            status_text += f" 🕒 (Expires in: {int(rem//3600)}h {int((rem%3600)//60)}m)"
+                    
+                    ui["lbl_jwt_status"].value = status_text
+                    ui["lbl_jwt_status"].color = status_color
+                    await show_toast("🔓 JWT Decoded")
+                
+                await safe_update(ui["txt_jwt_header"])
+                await safe_update(ui["txt_jwt_payload"])
+                await safe_update(ui["lbl_jwt_status"])
+
+            async def run_clear_jwt(e):
+                ui["txt_jwt_input"].value = ""; ui["txt_jwt_header"].value = ""; ui["txt_jwt_payload"].value = ""; ui["lbl_jwt_status"].value = ""
+                await safe_update(ui["txt_jwt_input"]); await safe_update(ui["txt_jwt_header"]); await safe_update(ui["txt_jwt_payload"]); await safe_update(ui["lbl_jwt_status"])
+
+            actions["run_decode_jwt"] = run_decode_jwt; actions["run_clear_jwt"] = run_clear_jwt
+
+        elif index == 13: # Image Optimizer
+            ui["txt_img_src"] = ft.TextField(label="ที่อยู่ไฟล์รูปภาพ", border_color=COLOR_PRIMARY, bgcolor="#252B25", border_radius=12, expand=True)
+            ui["slider_img_quality"] = ft.Slider(min=10, max=100, divisions=18, value=80, label="{value}%", active_color=COLOR_PRIMARY)
+            ui["dd_img_format"] = ft.Dropdown(label="นามสกุลเป้าหมาย", options=[ft.dropdown.Option("Original"), ft.dropdown.Option("JPEG"), ft.dropdown.Option("PNG"), ft.dropdown.Option("WEBP")], value="Original", border_color=COLOR_PRIMARY, bgcolor="#252B25", border_radius=12)
+            ui["lbl_img_status"] = ft.Text("สถานะ: พร้อม", color="white54")
+            ui["img_preview"] = ft.Image(src="", width=300, height=300, fit=ft.ImageFit.CONTAIN)
+
+            async def btn_open_img(e):
+                if await guard_busy(): return
+                current_fp_context[fp_open] = {"ui": ui["txt_img_src"], "type": "open"}
+                await fp_open.pick_files_async(allowed_extensions=["jpg", "jpeg", "png", "webp"])
+                # Wait for result to show preview? For now simple
+            
+            async def run_optimize_img(e):
+                if await guard_busy(): return
+                if not ui["txt_img_src"].value: return
+                
+                src_path = ui["txt_img_src"].value
+                dir_name = os.path.dirname(src_path)
+                base_name = os.path.splitext(os.path.basename(src_path))[0]
+                
+                fmt = ui["dd_img_format"].value
+                ext = ".jpg" if fmt == "JPEG" else ".png" if fmt == "PNG" else ".webp" if fmt == "WEBP" else os.path.splitext(src_path)[1]
+                target_fmt = None if fmt == "Original" else fmt
+                
+                out_path = os.path.join(dir_name, f"{base_name}_optimized{ext}")
+                
+                await set_busy(True)
+                ui["lbl_img_status"].value = "⏳ กำลังประมวลผล..."
+                await safe_update(ui["lbl_img_status"])
+                
+                success, result = await asyncio.to_thread(optimize_image, src_path, out_path, int(ui["slider_img_quality"].value), target_fmt)
+                
+                if success:
+                    old_size = os.path.getsize(src_path) / 1024
+                    new_size = result / 1024
+                    reduction = (1 - (new_size / old_size)) * 100
+                    ui["lbl_img_status"].value = f"✅ สำเร็จ! {old_size:.1f}KB -> {new_size:.1f}KB (ลดลง {reduction:.1f}%)"
+                    ui["lbl_img_status"].color = COLOR_SECONDARY
+                    await show_toast("🖼️ บันทึกรูปภาพเรียบร้อย")
+                else:
+                    ui["lbl_img_status"].value = f"❌ Error: {result}"
+                    ui["lbl_img_status"].color = "red"
+                
+                await set_busy(False)
+                await safe_update(ui["lbl_img_status"])
+
+            actions["btn_open_img"] = btn_open_img; actions["run_optimize_img"] = run_optimize_img
 
         elif index == 1: # Merge & Split
             ui["txt_src_dir"] = ft.TextField(label="โฟลเดอร์ต้นทาง", border_color=COLOR_PRIMARY, bgcolor="#252B25", border_radius=12, expand=True)
@@ -952,9 +1077,11 @@ async def main(page: ft.Page):
     nav_fmt = nav_btn(" Smart Formatter", "📝", make_nav(9))
     nav_bit_finder = nav_btn(" Bit Finder", "🔍", make_nav(10))
     nav_compare = nav_btn(" Compare Text", "🎭", make_nav(11))
-    nav_controls.extend([nav_home, nav_merge, nav_qr, nav_json, nav_binary, nav_time, nav_b64, nav_pass, nav_hidden, nav_fmt, nav_bit_finder, nav_compare])
+    nav_jwt = nav_btn(" JWT Decoder", "🔐", make_nav(12))
+    nav_img = nav_btn(" Image Optimizer", "🖼️", make_nav(13))
+    nav_controls.extend([nav_home, nav_merge, nav_qr, nav_json, nav_binary, nav_time, nav_b64, nav_pass, nav_hidden, nav_fmt, nav_bit_finder, nav_compare, nav_jwt, nav_img])
 
-    sidebar = ft.Container(content=ft.Column([ft.Container(content=ft.Row([ft.Text("🛠️", size=30, color=COLOR_PRIMARY), ft.Text(f"KhawOat\nMulti-Tools\nv{CURRENT_VERSION}", size=22, weight="bold")]), padding=ft.padding.only(bottom=30)), nav_home, ft.Divider(color="white10"), nav_merge, nav_qr, nav_json, nav_binary, nav_time, nav_b64, nav_pass, nav_hidden, nav_fmt, nav_bit_finder, nav_compare], spacing=10, scroll=ft.ScrollMode.AUTO), width=280, bgcolor=COLOR_SIDEBAR, padding=30)
+    sidebar = ft.Container(content=ft.Column([ft.Container(content=ft.Row([ft.Text("🛠️", size=30, color=COLOR_PRIMARY), ft.Text(f"KhawOat\nMulti-Tools\nv{CURRENT_VERSION}", size=22, weight="bold")]), padding=ft.padding.only(bottom=30)), nav_home, ft.Divider(color="white10"), nav_merge, nav_qr, nav_json, nav_binary, nav_time, nav_b64, nav_pass, nav_hidden, nav_fmt, nav_bit_finder, nav_compare, nav_jwt, nav_img], spacing=10, scroll=ft.ScrollMode.AUTO), width=280, bgcolor=COLOR_SIDEBAR, padding=30)
     
     page.add(ft.Row([sidebar, ft.Container(content=content_area, expand=True)], expand=True, spacing=0, vertical_alignment=ft.CrossAxisAlignment.STRETCH))
     

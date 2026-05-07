@@ -1,10 +1,10 @@
-# 🛠️ KhawOat Multi-Tools (v16.4)
+# 🛠️ KhawOat Multi-Tools (v16.5)
 
 **KhawOat Multi-Tools** คือเครื่องมืออเนกประสงค์ (Utility Tools) ที่ออกแบบมาเพื่อช่วยอำนวยความสะดวกในการทำงานด้านไอที การจัดการข้อมูล และงานสนับสนุน (Application Support) โดยเน้นความเรียบง่าย รวดเร็ว และดีไซน์ที่ทันสมัยในสไตล์ Modern Minimal
 
 ![Flet](https://img.shields.io/badge/UI_Framework-Flet-blue?style=for-the-badge&logo=python)
 ![Python](https://img.shields.io/badge/Language-Python_3.13-yellow?style=for-the-badge&logo=python)
-![Version](https://img.shields.io/badge/Version-16.4-orange?style=for-the-badge&logo=github)
+![Version](https://img.shields.io/badge/Version-16.5-orange?style=for-the-badge&logo=github)
 
 ---
 
@@ -14,8 +14,10 @@
 *   **Merge & Split**: จัดการไฟล์ CSV, Excel, และ Text ขนาดใหญ่ สามารถแบ่งไฟล์ตามจำนวนแถว หรือรวมไฟล์เข้าด้วยกันได้อย่างรวดเร็ว
 *   **JSON Tool Pro**: เครื่องมือจัดการ JSON แบบครบวงจร (Format, Minify, Tree View, Search, Diff, และแปลงเป็น CSV)
 *   **Hidden Char Check**: ตรวจสอบและล้างอักขระที่มองไม่เห็น (Zero-width characters) ที่มักทำให้ข้อมูลผิดพลาด
+*   **Image Optimizer (NEW v16.5)**: บีบอัดขนาดไฟล์รูปภาพ (PNG, JPEG, WEBP) และเปลี่ยนนามสกุลไฟล์เพื่อลดพื้นที่จัดเก็บ
 
 ### 🔐 Security & Encoding
+*   **JWT Decoder (NEW v16.5)**: ถอดรหัส JWT Token เพื่อดู Header และ Payload พร้อมตรวจสอบสถานะการหมดอายุของ Token
 *   **Base64 Tool**: เข้ารหัสและถอดรหัสข้อความ/JSON ในรูปแบบ Base64
 *   **Password Generator**: สร้างรหัสผ่านที่ปลอดภัยโดยกำหนดความยาวและรูปแบบได้ตามต้องการ
 *   **QR Generator**: สร้าง QR Code จากข้อความหรือลิงก์ พร้อมบันทึกเป็นไฟล์ภาพ

@@ -38,4 +38,4 @@ def generate_manifest(dist_dir, version):
 
 if __name__ == "__main__":
     # ตัวอย่างการใช้งาน (ปรับ path ตามจริงเวลา build)
-    generate_manifest("dist/KhawOat_MultiTools", "16.4")
+    generate_manifest("dist/KhawOat_MultiTools", "16.5")
