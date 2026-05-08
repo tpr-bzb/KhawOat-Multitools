@@ -1,14 +1,21 @@
-# 🛠️ KhawOat Multi-Tools Pro (v16.6)
+# 🛠️ KhawOat Multi-Tools Pro (v16.7)
 
 **KhawOat Multi-Tools Pro** คือเครื่องมืออเนกประสงค์ระดับมืออาชีพ ที่ได้รับการปรับโฉมใหม่หมดจดภายใต้แนวคิด **Modern Midnight Pro** มอบประสบการณ์การใช้งานที่ลื่นไหล สวยงาม และทรงพลัง สำหรับงานด้านไอทีและการสนับสนุนระบบ
 
 ![Flet](https://img.shields.io/badge/UI_Framework-Flet-blue?style=for-the-badge&logo=python)
 ![Python](https://img.shields.io/badge/Language-Python_3.13-yellow?style=for-the-badge&logo=python)
-![Version](https://img.shields.io/badge/Version-16.6_Pro-orange?style=for-the-badge&logo=github)
+![Version](https://img.shields.io/badge/Version-16.7_Pro-orange?style=for-the-badge&logo=github)
 
 ---
 
-## 💎 มีอะไรใหม่ใน Pro Redesign (v16.6)
+## ✨ มีอะไรใหม่ใน Responsive Update (v16.7)
+*   **Responsive Shell**: ปรับ Sidebar ให้ย่อขนาดอัตโนมัติเมื่อหน้าต่างแคบลง เพื่อให้พื้นที่เครื่องมือใช้งานได้ดีขึ้นบนจอขนาดเล็ก
+*   **Smaller Window Support**: ลดขนาดหน้าต่างขั้นต่ำเป็น 800x600 และจัด row สำคัญให้ wrap ได้มากขึ้น
+*   **Release Alignment**: ปรับเลขเวอร์ชันในตัวโปรแกรม, manifest, installer และเอกสารให้ตรงกันสำหรับระบบ Auto-Update
+*   **UI Stability Pass**: ปรับโครงสร้าง layout หลายหน้าให้เข้ากับ Flet v0.21.2 มากขึ้น โดยลดปัญหา control ล้น, scroll ไม่ทำงาน, และหน้าจอ render เพี้ยน
+*   **Workspace Refresh**: ปรับหน้า Home, JWT Decoder, Compare Text และเครื่องมือหลักหลายหน้าให้มี panel style และ visual hierarchy ที่ชัดขึ้น
+
+## 💎 Pro Redesign (v16.6)
 *   **Modern Midnight Aesthetic**: ธีมสีใหม่ที่ลุ่มลึกและสบายตา พร้อมการเล่นระดับมิติ (Depth & Elevation)
 *   **Glassmorphism UI**: การใช้เอฟเฟกต์โปร่งแสงและเงาที่นุ่มนวล ทำให้ปุ่มและเครื่องมือดูมีมิติ
 *   **Professional Sidebar**: เมนูด้านข้างแบบใหม่ที่เพรียวบาง พร้อม Hover Effects และการจัดวางที่ชัดเจน
@@ -51,6 +58,12 @@
 *   **Background**: `#10002B` (Deep Velvet Obsidian)
 *   **Accent**: `#FFD700` (Champagne Gold)
 
+แนวทาง UI ปัจจุบันของแอป:
+*   **Panel-based Workspace**: ใช้ card/panel แบบมิติชัดเจนเพื่อแบ่ง input, action และ result ออกจากกัน
+*   **Scroll-safe Layouts**: จัดหน้าที่มีผลลัพธ์ยาว เช่น JWT, Compare Text และ Smart Formatter ให้เลื่อนได้โดยไม่ทำให้ layout พัง
+*   **Consistent Action Rows**: ปุ่มหลักถูกจัดให้อยู่ใน action row ที่รูปแบบสม่ำเสมอขึ้นในหลายเครื่องมือ
+*   **Quick Access Dashboard**: หน้า Home ถูกปรับให้เป็นศูนย์รวมเครื่องมือและสถานะระบบที่อ่านง่ายขึ้น
+
 ---
 
 ## 🚀 ระบบอัปเดตอัตโนมัติ (Auto-Update)
@@ -61,7 +74,7 @@
 ---
 
 ## 💻 วิธีการติดตั้ง (For Users)
-1.  ดาวน์โหลดไฟล์ตัวติดตั้ง `KhawOat_MultiTools_v16.6_Setup.exe`
+1.  ดาวน์โหลดไฟล์ตัวติดตั้ง `KhawOat_MultiTools_v16.7_Setup.exe`
 2.  รันตัวติดตั้งและทำตามขั้นตอนบนหน้าจอ
 3.  เปิดโปรแกรมจาก Shortcut บน Desktop ได้ทันที
 
@@ -69,6 +82,13 @@
 
 ## 🛠️ สำหรับนักพัฒนา (For Developers)
 โปรแกรมนี้พัฒนาด้วย **Python** และเฟรมเวิร์ก **Flet**
+
+### หมายเหตุด้าน UI / Layout
+โปรเจกต์นี้ยังใช้ `flet==0.21.2` และมีข้อควรระวังในการจัด layout:
+*   หลีกเลี่ยงการใช้ `expand=True` ร่วมกับคอลัมน์ที่เปิด `scroll` โดยไม่จำเป็น
+*   หลีกเลี่ยง `width=float("inf")` ในปุ่มหรือ container หลัก
+*   ระวัง `Row(..., wrap=True)` ในหน้าที่มีหลาย control เพราะอาจทำให้บางหน้า render เพี้ยนในเวอร์ชันนี้
+*   หากเพิ่มหน้าใหม่ ควรยึด pattern แบบ panel + action row + scroll-safe result section ตามที่ใช้ในหน้าล่าสุด
 
 ### การเตรียม Environment:
 ```powershell
@@ -83,4 +103,4 @@ flet run main.py
 ```
 
 ---
-*พัฒนาโดย: KhawOat & Jamie (AI Assistant)*
+*พัฒนาโดย: KhawOat & (AI Assistant)*

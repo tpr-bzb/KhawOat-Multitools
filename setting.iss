@@ -2,10 +2,10 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 ; Non-commercial use only
 
-#define MyAppName "KhawOat Multi-Tools"
-#define MyAppVersion "16.5"
+#define MyAppName "KhawOat Multi-Tools-Pro"
+#define MyAppVersion "16.7"
 #define MyAppPublisher "Khowt Tools"
-#define MyAppExeName "KhawOat_MultiTools.exe"
+#define MyAppExeName "KhawOat_MultiTools_Pro.exe"
 #define MyAppAssocName MyAppName + " File"
 #define MyAppAssocExt ".myp"
 #define MyAppAssocKey StringChange(MyAppAssocName, " ", "") + MyAppAssocExt
@@ -34,7 +34,7 @@ ChangesAssociations=yes
 DisableProgramGroupPage=yes
 ; Uncomment the following line to run in non administrative install mode (install for current user only).
 ;PrivilegesRequired=lowest
-OutputBaseFilename=KhawOat_MultiTools_v16.5_Setup
+OutputBaseFilename=KhawOat_MultiTools_v16.7_Setup
 SetupIconFile=D:\MyProject\ToolsApplicationSupport\tools.ico
 SolidCompression=yes
 WizardStyle=classic windows11

@@ -1,25 +1,25 @@
 {
-    "version": "16.6",
+    "version": "16.7",
     "files": {
         "main.py": {
-            "hash": "9c393b23e9621935c3c00d2f5b2a3cdf0a81a968f96a1f5947c873d176a678af",
-            "size": 74557
+            "hash": "91aee3a53bb5d67344354e97801986f8441bd858ef2891fa001c41e570420edf",
+            "size": 75918
         },
         "ui_views.py": {
-            "hash": "b56a435453d2aa77853bd1965bd37d214d2d1b2c8a6ff5cc6f9865df7bca602a",
-            "size": 32311
+            "hash": "4f02ec7322904902f73886aeb6ab5c73925a8579839d856ac5bf98b59cef9967",
+            "size": 32571
         },
         "services.py": {
             "hash": "cd9c11b2011a0e187f782ef0449ee4bff8fa1e731349efadfb26b14cb90fd096",
             "size": 16362
         },
         "ui_config.py": {
-            "hash": "7f895eff685daab14252c678cd9b2596d5c801d9526b13875aa908da1d4203b6",
-            "size": 1950
+            "hash": "20cee8d2760edcf4252228c662be63b7e25c59f9d56c77dd47a8064898dd4ede",
+            "size": 2049
         },
         "version.json": {
-            "hash": "3d3a3aece99331c9f9b1e9b231d1d5f1b9d041788ffc569debe00984fbf961f3",
-            "size": 424
+            "hash": "78387c9bf779f94615e77d1d59544223fb07692b9f9fd482cbac3aceebf4d224",
+            "size": 549
         },
         "assets/afternoon.gif": {
             "hash": "ae43c773c82bfdb56d4ff683cb589c0c7d97d839b3a1f8dc771d302f1a5fcafc",

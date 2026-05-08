@@ -19,11 +19,11 @@ from ui_config import (
     COLOR_TEXT,
     COLOR_TEXT_DIM,
     COLOR_ERROR,
-    COLOR_SUCCESS,
     RADIUS_SM,
     RADIUS_MD,
     RADIUS_LG,
     BORDER_SUBTLE,
+    RESPONSIVE_THRESHOLD,
     configure_page,
 )
 from ui_views import build_tool_view, nav_btn
@@ -52,7 +52,14 @@ from services import (
 )
 from datetime import datetime, timezone
 
-CURRENT_VERSION = "16.6"
+COLORS = getattr(ft, "colors", getattr(ft, "Colors", None))
+COLOR_TRANSPARENT = getattr(COLORS, "TRANSPARENT", "transparent")
+COLOR_RED_400 = getattr(COLORS, "RED_400", "#ef5350")
+COLOR_AMBER_300 = getattr(COLORS, "AMBER_300", "#ffd54f")
+COLOR_BLUE_300 = getattr(COLORS, "BLUE_300", "#64b5f6")
+COLOR_GREEN_400 = getattr(COLORS, "GREEN_400", "#66bb6a")
+
+CURRENT_VERSION = "16.7"
 VERSION_JSON_URL = "https://raw.githubusercontent.com/tpr-bzb/KhawOat-Multitools/main/version.json"
 
 async def main(page: ft.Page):
@@ -73,7 +80,7 @@ async def main(page: ft.Page):
         ], alignment=ft.MainAxisAlignment.CENTER, horizontal_alignment=ft.CrossAxisAlignment.CENTER),
         expand=True,
         bgcolor=COLOR_BG, 
-        alignment=ft.alignment.center,
+        alignment=getattr(ft.alignment, "center", ft.alignment.center_left),
     )
 
     splash_overlay = ft.Container(
@@ -241,17 +248,21 @@ async def main(page: ft.Page):
         ctx = current_fp_context.get(e.control)
         if not ctx: return
         
-        target_ui = ctx["ui"]
+        target_ui = ctx.get("ui")
         if ctx["type"] == "dir" and e.path:
-            target_ui.value = e.path
+            if target_ui is not None:
+                target_ui.value = e.path
         elif ctx["type"] == "open" and e.files:
-            target_ui.value = e.files[0].path
-        elif ctx["type"] == "save" and e.path:
-            target_ui.value = e.path # We use value to pass back the selected path
-            if "callback" in ctx: await ctx["callback"](e.path)
+            if target_ui is not None:
+                target_ui.value = e.files[0].path
+        elif ctx["type"] == "save":
+            save_path = e.path or (e.files[0].path if e.files else None)
+            if save_path and "callback" in ctx:
+                await ctx["callback"](save_path)
             return
             
-        await safe_update(target_ui)
+        if target_ui is not None:
+            await safe_update(target_ui)
 
     fp_dir = ft.FilePicker(on_result=on_fp_result)
     fp_open = ft.FilePicker(on_result=on_fp_result)
@@ -311,7 +322,7 @@ async def main(page: ft.Page):
                         now = time.time()
                         if now > exp_time:
                             status_text += " ⚠️ (TOKEN EXPIRED!)"
-                            status_color = ft.colors.RED_400
+                            status_color = COLOR_RED_400
                         else:
                             rem = exp_time - now
                             status_text += f" 🕒 (Expires in: {int(rem//3600)}h {int((rem%3600)//60)}m)"
@@ -479,7 +490,7 @@ async def main(page: ft.Page):
             ui["txt_qr"] = ft.TextField(label="URL หรือ ข้อความ", border_color=COLOR_PRIMARY, bgcolor="#252B25", border_radius=12)
             ui["img_qr"] = ft.Image(src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==", width=250, height=250, visible=False)
             ui["lbl_qr_status"] = ft.Text("", color="white54")
-            ui["qr_container"] = ft.Container(content=ui["img_qr"], alignment=ft.alignment.center, padding=20, bgcolor="white", border_radius=RADIUS_MD, visible=False)
+            ui["qr_container"] = ft.Container(content=ui["img_qr"], alignment=getattr(ft.alignment, "center", ft.alignment.center_left), padding=20, bgcolor="white", border_radius=RADIUS_MD, visible=False)
 
             async def run_gen_qr(e):
                 if await guard_busy(): return
@@ -508,13 +519,13 @@ async def main(page: ft.Page):
             async def btn_save_qr(e):
                 if await guard_busy(): return
                 if not ui["img_qr"].src_base64: await show_toast("สร้าง QR ก่อน", False); return
-                current_fp_context[fp_save] = {"ui": ft.Control(), "type": "save", "callback": do_save_qr}
+                current_fp_context[fp_save] = {"type": "save", "callback": do_save_qr}
                 await fp_save.save_file_async(file_name="qrcode.png", file_type=ft.FilePickerFileType.IMAGE, allowed_extensions=["png"])
 
             actions["run_gen_qr"] = run_gen_qr; actions["btn_save_qr"] = btn_save_qr
 
         elif index == 3: # JSON Tool
-            ui["txt_line_numbers"] = ft.TextField(value="1", multiline=True, read_only=True, width=55, text_size=14, text_align=ft.TextAlign.RIGHT, border=ft.InputBorder.NONE, bgcolor=ft.colors.TRANSPARENT, color=COLOR_PRIMARY, text_style=ft.TextStyle(font_family="Consolas", height=1.5), content_padding=ft.padding.only(top=12, right=10, bottom=12))
+            ui["txt_line_numbers"] = ft.TextField(value="1", multiline=True, read_only=True, width=55, text_size=14, text_align=ft.TextAlign.RIGHT, border=ft.InputBorder.NONE, bgcolor=COLOR_TRANSPARENT, color=COLOR_PRIMARY, text_style=ft.TextStyle(font_family="Consolas", height=1.5), content_padding=ft.padding.only(top=12, right=10, bottom=12))
             ui["tree_container"] = ft.Column(scroll=ft.ScrollMode.ALWAYS, expand=True)
             
             async def update_tree():
@@ -534,7 +545,7 @@ async def main(page: ft.Page):
                 if highlighted_paths is None: highlighted_paths = []
                 is_highlighted = label in highlighted_paths or any(p.startswith(label + ".") or p.startswith(label + "[") for p in highlighted_paths)
                 
-                text_color = COLOR_PRIMARY if is_highlighted else ft.colors.AMBER_300
+                text_color = COLOR_PRIMARY if is_highlighted else COLOR_AMBER_300
                 
                 if isinstance(data, dict):
                     return ft.ExpansionTile(
@@ -545,7 +556,7 @@ async def main(page: ft.Page):
                     )
                 elif isinstance(data, list):
                     return ft.ExpansionTile(
-                        title=ft.Text(label, color=ft.colors.BLUE_300 if not is_highlighted else COLOR_PRIMARY, weight="bold" if is_highlighted else "normal"),
+                        title=ft.Text(label, color=COLOR_BLUE_300 if not is_highlighted else COLOR_PRIMARY, weight="bold" if is_highlighted else "normal"),
                         subtitle=ft.Text(f"[ {len(data)} items ]", size=10, italic=True),
                         initially_expanded=is_highlighted,
                         controls=[build_tree(v, f"{label}[{i}]" if label != "root" else f"[{i}]", highlighted_paths) for i, v in enumerate(data)]
@@ -553,7 +564,7 @@ async def main(page: ft.Page):
                 else:
                     return ft.ListTile(
                         title=ft.Text(f"{label}: ", size=13, weight="bold" if is_highlighted else "normal", color=COLOR_TEXT if not is_highlighted else COLOR_PRIMARY),
-                        trailing=ft.Text(f"{data}", color=ft.colors.GREEN_400 if not is_highlighted else COLOR_PRIMARY, selectable=True),
+                        trailing=ft.Text(f"{data}", color=COLOR_GREEN_400 if not is_highlighted else COLOR_PRIMARY, selectable=True),
                         dense=True
                     )
 
@@ -899,10 +910,10 @@ async def main(page: ft.Page):
 
         elif index == 9: # Smart Formatter
             ui["txt_fmt_ticket"] = ft.TextField(label="เลข Ticket", hint_text="12345", width=180, border_color=COLOR_PRIMARY, bgcolor="#181C18", border_radius=8, text_size=13)
-            ui["txt_fmt_subject"] = ft.TextField(label="หัวข้อ (Subject)", hint_text="เช่น [BKK] ปัญหาการใช้งาน...", expand=True, border_color=COLOR_PRIMARY, bgcolor="#181C18", border_radius=8, text_size=13)
+            ui["txt_fmt_subject"] = ft.TextField(label="หัวข้อ (Subject)", hint_text="เช่น [BKK] ปัญหาการใช้งาน...", border_color=COLOR_PRIMARY, bgcolor="#181C18", border_radius=8, text_size=13)
             ui["txt_fmt_date"] = ft.TextField(label="วันที่", hint_text="เช่น 28/04/2026", width=180, border_color=COLOR_PRIMARY, bgcolor="#181C18", border_radius=8, text_size=13)
             ui["txt_fmt_input"] = ft.TextField(label="คำตอบจาก Support", multiline=True, min_lines=3, max_lines=3, border_color=COLOR_PRIMARY, bgcolor="#181C18", border_radius=8, text_size=13)
-            ui["txt_fmt_res"] = ft.TextField(label="ผลลัพธ์ (Copy ไปใช้ได้เลย)", multiline=True, read_only=True, expand=True, border_color=COLOR_SECONDARY, bgcolor="#0A0C0A", text_style=ft.TextStyle(size=14, font_family="Tahoma", height=1.5), content_padding=15)
+            ui["txt_fmt_res"] = ft.TextField(label="ผลลัพธ์ (Copy ไปใช้ได้เลย)", multiline=True, min_lines=8, max_lines=12, read_only=True, border_color=COLOR_SECONDARY, bgcolor="#0A0C0A", text_style=ft.TextStyle(size=14, font_family="Tahoma", height=1.5), content_padding=15)
             
             TMPS = {
                 "1": "Dear Valued Customer,\n\nBuzzebees Application Support acknowledged your request and recorded it in our system already. Please see information below for reference.\n\nCase No. {ticket_no} Subject “{subject}”\n\nThis case is in the progress of investigation/assigning to specialist at the moment. Our specialist will contact you with in 3-5 days.\n\nYours sincerely,\nBuzzebees Application Support\nEmail: app-support@buzzebees.com",
@@ -1001,8 +1012,8 @@ async def main(page: ft.Page):
             actions["run_find_bits"] = run_find_bits; actions["run_clear_bits"] = clr_bin; actions["btn_copy_bits"] = cp_bin; actions["btn_copy_sql"] = cp_sql
 
         elif index == 11: # Compare Text
-            ui["txt_compare_1"] = ft.TextField(label="ข้อความเดิม (Original)", multiline=True, min_lines=10, expand=True, border_color=COLOR_PRIMARY, bgcolor="#1E231E", text_size=13)
-            ui["txt_compare_2"] = ft.TextField(label="ข้อความใหม่ (Changed)", multiline=True, min_lines=10, expand=True, border_color=COLOR_SECONDARY, bgcolor="#1E231E", text_size=13)
+            ui["txt_compare_1"] = ft.TextField(label="ข้อความเดิม (Original)", multiline=True, min_lines=10, border_color=COLOR_PRIMARY, bgcolor="#1E231E", text_size=13)
+            ui["txt_compare_2"] = ft.TextField(label="ข้อความใหม่ (Changed)", multiline=True, min_lines=10, border_color=COLOR_SECONDARY, bgcolor="#1E231E", text_size=13)
             ui["col_diff_main"] = ft.ListView(expand=True, spacing=1)
 
             async def run_compare_text(e):
@@ -1027,8 +1038,8 @@ async def main(page: ft.Page):
                             r_num = " "
                             l_text = " "
                             r_text = " "
-                            l_bg = ft.colors.TRANSPARENT
-                            r_bg = ft.colors.TRANSPARENT
+                            l_bg = COLOR_TRANSPARENT
+                            r_bg = COLOR_TRANSPARENT
                             l_color = "white54"
                             r_color = "white54"
                             ln_l_color = "white24"
@@ -1040,11 +1051,11 @@ async def main(page: ft.Page):
                                 ln_left += 1; ln_right += 1
                             elif tag == "- ": # Removed from Left
                                 l_num = str(ln_left); l_text = content
-                                l_bg = "#2E1A1A"; l_color = ft.colors.RED_400; ln_l_color = "red400"
+                                l_bg = "#2E1A1A"; l_color = COLOR_RED_400; ln_l_color = "red400"
                                 ln_left += 1
                             elif tag == "+ ": # Added to Right
                                 r_num = str(ln_right); r_text = content
-                                r_bg = "#1A2E1A"; r_color = ft.colors.GREEN_400; ln_r_color = "green400"
+                                r_bg = "#1A2E1A"; r_color = COLOR_GREEN_400; ln_r_color = "green400"
                                 ln_right += 1
                             elif tag == "? ": 
                                 continue
@@ -1115,6 +1126,22 @@ async def main(page: ft.Page):
     nav_jwt = nav_btn(" JWT Decoder", "🔐", make_nav(12))
     nav_img = nav_btn(" Image Optimizer", "🖼️", make_nav(13))
     nav_controls.extend([nav_home, nav_merge, nav_qr, nav_json, nav_binary, nav_time, nav_b64, nav_pass, nav_hidden, nav_fmt, nav_bit_finder, nav_compare, nav_jwt, nav_img])
+    nav_labels = [
+        (nav_home, " Home", "Home"),
+        (nav_merge, " Merge & Split", "Merge"),
+        (nav_qr, " QR Generator", "QR"),
+        (nav_json, " JSON Tool", "JSON"),
+        (nav_binary, " Binary Tool", "Binary"),
+        (nav_time, " Time Converter", "Time"),
+        (nav_b64, " Base64 Tool", "Base64"),
+        (nav_pass, " Password Gen", "Password"),
+        (nav_hidden, " Hidden Char Check", "Hidden"),
+        (nav_fmt, " Smart Formatter", "Formatter"),
+        (nav_bit_finder, " Bit Finder", "Bits"),
+        (nav_compare, " Compare Text", "Compare"),
+        (nav_jwt, " JWT Decoder", "JWT"),
+        (nav_img, " Image Optimizer", "Image"),
+    ]
 
     sidebar = ft.Container(
         content=ft.Column([
@@ -1141,9 +1168,26 @@ async def main(page: ft.Page):
         bgcolor=COLOR_SIDEBAR,
         padding=20,
     )
+
+    async def apply_responsive_layout():
+        width = page.width or page.window_width or 1280
+        compact = width < RESPONSIVE_THRESHOLD
+        sidebar.width = 220 if compact else 300
+        sidebar.padding = 12 if compact else 20
+        for button, full_label, compact_label in nav_labels:
+            label_control = button.content.controls[1]
+            label_control.value = compact_label if compact else full_label
+            label_control.size = 12 if compact else 14
+        await safe_update(sidebar)
+
+    async def handle_resize(e):
+        await apply_responsive_layout()
+
+    page.on_resize = handle_resize
     
     page.add(ft.Row([sidebar, ft.Container(content=content_area, expand=True)], expand=True, spacing=0, vertical_alignment=ft.CrossAxisAlignment.STRETCH))
     
+    await apply_responsive_layout()
     await update_view(0)
     init_end_time = time.time(); print(f"Lazy Initialization took: {init_end_time - init_start_time:.4f}s")
     

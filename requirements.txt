@@ -1,0 +1,7 @@
+flet==0.21.2
+pandas==3.0.2
+openpyxl==3.1.5
+qrcode==7.4.2
+pillow==12.2.0
+requests==2.33.1
+pyinstaller==6.20.0
