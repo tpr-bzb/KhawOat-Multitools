@@ -1,6 +1,6 @@
 {
-  "version": "16.7",
-  "force_setup": false,
+  "version": "17.0.0",
+  "force_setup": true,
   "update_url": "https://github.com/tpr-bzb/KhawOat-Multitools/releases",
-  "change_log": "✨ v16.7 RESPONSIVE UPDATE: ปรับปรุงโครงสร้างหน้าจอให้รองรับจอขนาดเล็กได้ดียิ่งขึ้น, ปรับแต่งหน้า Dashboard ให้สมดุล และเตรียมความพร้อมสำหรับเครื่องมือใหม่ในอนาคต"
+  "change_log": "🚀 v17.0.0 BIG UPDATE: ยกระดับโครงสร้างแอป, harden ระบบ auto-update, เพิ่ม release workflow มาตรฐาน, และเตรียมฐานระบบสำหรับการเปลี่ยนแปลงขนาดใหญ่รอบถัดไป"
 }

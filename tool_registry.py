@@ -1,0 +1,16 @@
+TOOL_SPECS = [
+    {"id": 0, "full_label": " Home", "compact_label": "Home", "icon": "🏠", "sidebar": "top"},
+    {"id": 1, "full_label": " Merge & Split", "compact_label": "Merge", "icon": "🗂️", "sidebar": "main"},
+    {"id": 2, "full_label": " QR Generator", "compact_label": "QR", "icon": "🔳", "sidebar": "main"},
+    {"id": 3, "full_label": " JSON Tool", "compact_label": "JSON", "icon": "🧾", "sidebar": "main"},
+    {"id": 4, "full_label": " Binary Tool", "compact_label": "Binary", "icon": "🧮", "sidebar": "main"},
+    {"id": 5, "full_label": " Time Converter", "compact_label": "Time", "icon": "⏱️", "sidebar": "main"},
+    {"id": 6, "full_label": " Base64 Tool", "compact_label": "Base64", "icon": "🔐", "sidebar": "main"},
+    {"id": 7, "full_label": " Password Gen", "compact_label": "Password", "icon": "🔑", "sidebar": "main"},
+    {"id": 8, "full_label": " Hidden Char Check", "compact_label": "Hidden", "icon": "🕵️", "sidebar": "main"},
+    {"id": 9, "full_label": " Smart Formatter", "compact_label": "Formatter", "icon": "📝", "sidebar": "main"},
+    {"id": 10, "full_label": " Bit Finder", "compact_label": "Bits", "icon": "🔍", "sidebar": "main"},
+    {"id": 11, "full_label": " Compare Text", "compact_label": "Compare", "icon": "🎭", "sidebar": "main"},
+    {"id": 12, "full_label": " JWT Decoder", "compact_label": "JWT", "icon": "🔐", "sidebar": "main"},
+    {"id": 13, "full_label": " Image Optimizer", "compact_label": "Image", "icon": "🖼️", "sidebar": "main"},
+]

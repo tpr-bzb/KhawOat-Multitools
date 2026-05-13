@@ -1,19 +1,24 @@
-# 🛠️ KhawOat Multi-Tools Pro (v16.7)
+# 🛠️ KhawOat Multi-Tools Pro (v17.0.0)
 
 **KhawOat Multi-Tools Pro** คือเครื่องมืออเนกประสงค์ระดับมืออาชีพ ที่ได้รับการปรับโฉมใหม่หมดจดภายใต้แนวคิด **Modern Midnight Pro** มอบประสบการณ์การใช้งานที่ลื่นไหล สวยงาม และทรงพลัง สำหรับงานด้านไอทีและการสนับสนุนระบบ
 
 ![Flet](https://img.shields.io/badge/UI_Framework-Flet-blue?style=for-the-badge&logo=python)
 ![Python](https://img.shields.io/badge/Language-Python_3.13-yellow?style=for-the-badge&logo=python)
-![Version](https://img.shields.io/badge/Version-16.7_Pro-orange?style=for-the-badge&logo=github)
+![Version](https://img.shields.io/badge/Version-17.0.0_Pro-orange?style=for-the-badge&logo=github)
 
 ---
 
-## ✨ มีอะไรใหม่ใน Responsive Update (v16.7)
-*   **Responsive Shell**: ปรับ Sidebar ให้ย่อขนาดอัตโนมัติเมื่อหน้าต่างแคบลง เพื่อให้พื้นที่เครื่องมือใช้งานได้ดีขึ้นบนจอขนาดเล็ก
-*   **Smaller Window Support**: ลดขนาดหน้าต่างขั้นต่ำเป็น 800x600 และจัด row สำคัญให้ wrap ได้มากขึ้น
-*   **Release Alignment**: ปรับเลขเวอร์ชันในตัวโปรแกรม, manifest, installer และเอกสารให้ตรงกันสำหรับระบบ Auto-Update
-*   **UI Stability Pass**: ปรับโครงสร้าง layout หลายหน้าให้เข้ากับ Flet v0.21.2 มากขึ้น โดยลดปัญหา control ล้น, scroll ไม่ทำงาน, และหน้าจอ render เพี้ยน
-*   **Workspace Refresh**: ปรับหน้า Home, JWT Decoder, Compare Text และเครื่องมือหลักหลายหน้าให้มี panel style และ visual hierarchy ที่ชัดขึ้น
+## ✨ มีอะไรใหม่ใน Big Update (v17.0.0)
+*   **Structural Refactor**: ปรับโครงสร้าง handler, helper และ context ให้ขยายต่อได้ง่ายขึ้น
+*   **Updater Hardening**: จำกัดขอบเขต auto-patch ให้ปลอดภัยขึ้น, เพิ่ม hash verification และ rollback
+*   **Installer-first Policy for Major Changes**: ถ้ามีการเปลี่ยน code/runtime/dependency จะบังคับใช้ installer ใหม่แทน patch ตรง
+*   **Release Workflow**: เพิ่ม `scripts/release.ps1` เพื่อรวมขั้นตอน validate, manifest refresh และ build ให้อยู่ใน flow เดียว
+*   **Regression Safety**: เพิ่ม smoke tests และ unit tests สำหรับ logic สำคัญและ release metadata
+
+### 📝 Maintenance Note (2026-05-08)
+*   รอบนี้เน้นเก็บงาน **Version / Release Alignment** และรีเฟรช `manifest.json` ให้ตรงกับไฟล์จริงล่าสุด
+*   มีการทดลองปรับ layout เพิ่มเติมระหว่าง QA แต่ได้ถอยกลับแล้ว เพื่อคงหน้าตา UI เดิมและลดความเสี่ยงกับ `flet==0.21.2`
+*   งาน QA เชิง visual/live runtime ยังควรทำต่อในรอบถัดไปหลังจาก environment Python/venv เสถียรกว่านี้
 
 ## 💎 Pro Redesign (v16.6)
 *   **Modern Midnight Aesthetic**: ธีมสีใหม่ที่ลุ่มลึกและสบายตา พร้อมการเล่นระดับมิติ (Depth & Elevation)
@@ -69,12 +74,14 @@
 ## 🚀 ระบบอัปเดตอัตโนมัติ (Auto-Update)
 โปรแกรมมาพร้อมกับระบบตรวจสอบเวอร์ชันผ่าน GitHub โดยอัตโนมัติ:
 *   ทุกครั้งที่เปิดโปรแกรม ระบบจะเช็คเวอร์ชันล่าสุดจาก GitHub
-*   หากมีการอัปเดต ระบบจะดาวน์โหลด Patch เฉพาะไฟล์ที่แก้ไขมาติดตั้งให้ทันที (ไม่ต้องติดตั้งใหม่ทั้งหมด)
+*   หากเป็นการอัปเดตที่ปลอดภัยต่อ runtime ระบบจะดาวน์โหลด Patch เฉพาะไฟล์ที่อนุญาต เช่น asset ภายนอก
+*   หากเป็นการอัปเดตที่กระทบโค้ดหลัก, executable packaging หรือ dependency เช่น `requirements.txt` ระบบจะบังคับให้ดาวน์โหลดตัวติดตั้งใหม่แทน
+*   ทุกไฟล์ที่ patch จะถูกตรวจ hash ก่อนแทนที่ และมี rollback หากเขียนไฟล์ไม่สำเร็จหรือ hash ไม่ตรง
 
 ---
 
 ## 💻 วิธีการติดตั้ง (For Users)
-1.  ดาวน์โหลดไฟล์ตัวติดตั้ง `KhawOat_MultiTools_v16.7_Setup.exe`
+1.  ดาวน์โหลดไฟล์ตัวติดตั้ง `KhawOat_MultiTools_v17.0.0_Setup.exe`
 2.  รันตัวติดตั้งและทำตามขั้นตอนบนหน้าจอ
 3.  เปิดโปรแกรมจาก Shortcut บน Desktop ได้ทันที
 
@@ -92,15 +99,44 @@
 
 ### การเตรียม Environment:
 ```powershell
-python -m venv .venv
-.\.venv\Scripts\activate
-pip install -r requirements.txt
+.\scripts\setup.ps1
 ```
 
 ### การรันโปรแกรม:
 ```powershell
-flet run main.py
+.\scripts\run.ps1
 ```
+
+### การตรวจสุขภาพโปรเจกต์:
+```powershell
+.\scripts\check.ps1
+```
+
+### การเตรียม Release:
+```powershell
+.\scripts\release.ps1
+```
+
+ตัวเลือกที่ใช้ได้:
+```powershell
+.\scripts\release.ps1 -SkipExeBuild -SkipInstallerBuild
+.\scripts\release.ps1 -SkipInstallerBuild
+```
+
+สิ่งที่สคริปต์ตรวจให้อัตโนมัติ:
+*   version alignment
+*   manifest refresh
+*   project checks ก่อนและหลัง regenerate manifest
+*   การมีอยู่จริงของ artifact หลัง build เช่น `.exe` และ installer
+*   การสร้าง `logs/release-summary.txt` เป็น release checklist หลังจบ workflow
+
+### Logging
+โปรเจกต์จะเขียน log ลงโฟลเดอร์ `logs/` สำหรับ flow สำคัญ:
+*   `logs/update.log` สำหรับระบบ auto-update
+*   `logs/process.log` สำหรับ flow งานสำคัญ เช่น merge/split และ hidden char
+*   `logs/release.log` สำหรับ release workflow
+
+log ฝั่ง Python มี rotation อัตโนมัติ และ release log มี retention แบบง่ายเพื่อไม่ให้ไฟล์โตไม่จำกัด
 
 ---
 *พัฒนาโดย: KhawOat & (AI Assistant)*

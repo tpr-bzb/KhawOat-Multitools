@@ -3,7 +3,7 @@
 ; Non-commercial use only
 
 #define MyAppName "KhawOat Multi-Tools-Pro"
-#define MyAppVersion "16.7"
+#define MyAppVersion "17.0.0"
 #define MyAppPublisher "Khowt Tools"
 #define MyAppExeName "KhawOat_MultiTools_Pro.exe"
 #define MyAppAssocName MyAppName + " File"
@@ -34,7 +34,7 @@ ChangesAssociations=yes
 DisableProgramGroupPage=yes
 ; Uncomment the following line to run in non administrative install mode (install for current user only).
 ;PrivilegesRequired=lowest
-OutputBaseFilename=KhawOat_MultiTools_v16.7_Setup
+OutputBaseFilename=KhawOat_MultiTools_v17.0.0_Setup
 SetupIconFile=D:\MyProject\ToolsApplicationSupport\tools.ico
 SolidCompression=yes
 WizardStyle=classic windows11
@@ -47,6 +47,7 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 
 [Files]
 Source: "D:\MyProject\ToolsApplicationSupport\dist\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
+Source: "D:\MyProject\ToolsApplicationSupport\version.json"; DestDir: "{app}"; Flags: ignoreversion
 Source: "D:\MyProject\ToolsApplicationSupport\assets\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 

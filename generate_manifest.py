@@ -1,76 +1,87 @@
-import os
 import hashlib
 import json
+import os
 
-# รายชื่อไฟล์และโฟลเดอร์ที่ต้องการให้ระบบ Auto-Update นำไป Patch
+
 INCLUDE_FILES = [
     "main.py",
+    "app_release.py",
+    "app_logging.py",
+    "app_runtime.py",
+    "handlers_basic.py",
+    "handlers_tools.py",
+    "merge_split_helpers.py",
+    "json_tool_helpers.py",
+    "json_view_helpers.py",
     "ui_views.py",
     "services.py",
     "ui_config.py",
-    "version.json"
+    "requirements.txt",
+    "version.json",
 ]
 
 INCLUDE_FOLDERS = [
-    "assets"
+    "assets",
 ]
 
+
 def calculate_hash(filepath):
-    """คำนวณ SHA256 ของไฟล์"""
     hasher = hashlib.sha256()
     try:
-        with open(filepath, 'rb') as f:
-            for chunk in iter(lambda: f.read(4096), b""):
+        with open(filepath, "rb") as file_obj:
+            for chunk in iter(lambda: file_obj.read(4096), b""):
                 hasher.update(chunk)
         return hasher.hexdigest()
-    except Exception as e:
-        print(f"Error hashing {filepath}: {e}")
+    except Exception as exc:
+        print(f"Error hashing {filepath}: {exc}")
         return None
 
+
 def generate_manifest():
-    # 1. อ่านเวอร์ชันจาก version.json
     try:
-        with open("version.json", "r", encoding="utf-8") as f:
-            v_data = json.load(f)
-            version = v_data.get("version", "1.0")
-    except:
+        with open("version.json", "r", encoding="utf-8") as version_file:
+            version_data = json.load(version_file)
+            version = version_data.get("version", "1.0")
+    except Exception:
         version = "1.0"
 
     manifest = {
         "version": version,
-        "files": {}
+        "files": {},
     }
-    
-    # 2. เพิ่มไฟล์รายตัว
-    for file in INCLUDE_FILES:
-        if os.path.exists(file):
-            file_hash = calculate_hash(file)
-            if file_hash:
-                manifest["files"][file] = {
-                    "hash": file_hash,
-                    "size": os.path.getsize(file)
-                }
-    
-    # 3. เพิ่มไฟล์ในโฟลเดอร์ที่กำหนด
+
+    for file_path in INCLUDE_FILES:
+        if not os.path.exists(file_path):
+            continue
+        file_hash = calculate_hash(file_path)
+        if not file_hash:
+            continue
+        manifest["files"][file_path] = {
+            "hash": file_hash,
+            "size": os.path.getsize(file_path),
+        }
+
     for folder in INCLUDE_FOLDERS:
-        if os.path.exists(folder):
-            for root, dirs, files in os.walk(folder):
-                for file in files:
-                    full_path = os.path.join(root, file)
-                    rel_path = os.path.relpath(full_path, ".").replace("\\", "/")
-                    file_hash = calculate_hash(full_path)
-                    if file_hash:
-                        manifest["files"][rel_path] = {
-                            "hash": file_hash,
-                            "size": os.path.getsize(full_path)
-                        }
-            
-    with open('manifest.json', 'w', encoding='utf-8') as f:
-        json.dump(manifest, f, indent=4, ensure_ascii=False)
-    
-    print(f"✅ Manifest generated successfully for version {version}")
-    print(f"📦 Total files tracked: {len(manifest['files'])}")
+        if not os.path.exists(folder):
+            continue
+        for root, _dirs, files in os.walk(folder):
+            for file_name in files:
+                full_path = os.path.join(root, file_name)
+                rel_path = os.path.relpath(full_path, ".").replace("\\", "/")
+                file_hash = calculate_hash(full_path)
+                if not file_hash:
+                    continue
+                manifest["files"][rel_path] = {
+                    "hash": file_hash,
+                    "size": os.path.getsize(full_path),
+                }
+
+    with open("manifest.json", "w", encoding="utf-8") as manifest_file:
+        json.dump(manifest, manifest_file, indent=4, ensure_ascii=False)
+
+    print(f"Manifest generated successfully for version {version}")
+    print(f"Total files tracked: {len(manifest['files'])}")
+
 
 if __name__ == "__main__":
     generate_manifest()
-

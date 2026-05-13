@@ -3,12 +3,25 @@ dist/
 Output/
 __pycache__/
 .venv/
+.python313/
+.cursor/
+.vscode/
+.idea/
+logs/
 *.exe
 *.rar
 *.pkg
 *.spec
 *.pyc
+*.bak
+*.log
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+.env
+.env.*
 
 # Local Rules & Guides
 rule.md
-PATCHING_GUIDE.md

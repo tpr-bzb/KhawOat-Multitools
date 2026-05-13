@@ -1,4 +1,4 @@
-import flet as ft
+﻿import flet as ft
 from ui_config import (
     COLOR_ACCENT,
     COLOR_BG,
@@ -110,7 +110,7 @@ def nav_btn(text: str, icon_text: str, on_click):
         )
     )
 
-def build_tool_view(index: int, ui: dict, actions: dict, current_version: str = "1.0", patch_notes: str = ""):
+def build_tool_view(index: int, ui: dict, actions: dict, current_version: str = "1.0", patch_notes: str = "", is_compact: bool = False):
     # Standard Card Wrapper for consistency
     def card_container(content, expand=True):
         return ft.Container(
@@ -121,6 +121,17 @@ def build_tool_view(index: int, ui: dict, actions: dict, current_version: str = 
             expand=expand,
             border=ft.border.all(1, BORDER_SUBTLE) if index != 0 else None,
             margin=ft.margin.only(left=2) if index != 0 else 0 # Prevent border overlap with sidebar
+        )
+
+    def stack_or_row(controls, spacing=15, expand=False, alignment=ft.MainAxisAlignment.START, vertical_alignment=ft.CrossAxisAlignment.START):
+        if is_compact:
+            return ft.Column(controls, spacing=spacing, expand=expand)
+        return ft.Row(
+            controls,
+            spacing=spacing,
+            expand=expand,
+            alignment=alignment,
+            vertical_alignment=vertical_alignment,
         )
 
     # --- 🏠 0. Welcome / Dashboard Page ---
@@ -152,21 +163,33 @@ def build_tool_view(index: int, ui: dict, actions: dict, current_version: str = 
                 on_click=actions["nav_tool"],
                 on_hover=on_hover,
                 data=str(idx),
-                width=158,
+                width=150 if is_compact else 158,
                 height=132,
                 animate=ft.animation.Animation(300, ft.AnimationCurve.DECELERATE),
             )
+
+        quick_access_groups = [
+            [
+                quick_tool_card("JSON Tool", "🧾", "Format & Validate", 3),
+                quick_tool_card("QR GEN", "🔳", "Create & Save QR", 2),
+                quick_tool_card("Password Gen", "🔑", "Secure Generator", 7),
+            ],
+            [
+                quick_tool_card("Time Converter", "⏱️", "Unix & Ticks", 5),
+                quick_tool_card("Binary Tools", "🧮", "Base Calculation", 4),
+            ],
+        ]
 
         return ft.Container(
             content=ft.Column([
                 # Hero Header
                 panel(
                     ft.Column([
-                        ft.Row([
+                        stack_or_row([
                             badge("Modern Midnight Workspace", tone="soft"),
                             badge(f"Version {current_version}", tone="accent"),
                         ], alignment=ft.MainAxisAlignment.SPACE_BETWEEN),
-                        ft.Row([
+                        stack_or_row([
                             ft.Column([
                                 ft.Text("ศูนย์บัญชาการเครื่องมือประจำวัน", size=FONT_SIZE_SMALL, color=COLOR_SECONDARY, weight="bold"),
                                 ft.Text(ui["greeting_text"], size=32, weight="bold", color=COLOR_TEXT),
@@ -186,7 +209,7 @@ def build_tool_view(index: int, ui: dict, actions: dict, current_version: str = 
                                 bgcolor=COLOR_PANEL_ALT,
                             ),
                         ], spacing=20, alignment=ft.MainAxisAlignment.SPACE_BETWEEN, vertical_alignment=ft.CrossAxisAlignment.CENTER),
-                        ft.Row([
+                        stack_or_row([
                             info_stat("Health", "Stable", "🛡️"),
                             info_stat("Update Mode", "Patch-ready", "⚙️", accent=COLOR_SECONDARY),
                             info_stat("Workspace", "14 tools live", "🧰", accent=COLOR_ACCENT),
@@ -197,24 +220,19 @@ def build_tool_view(index: int, ui: dict, actions: dict, current_version: str = 
                 ),
 
                 # Quick Access Section
-                ft.Row([
+                stack_or_row([
                     ft.Text("🚀 Quick Access Tools", size=FONT_SIZE_H3, weight="bold", color=COLOR_TEXT),
                     ft.Text("คลิกเพื่อเปิดเครื่องมือที่ใช้บ่อยที่สุด", size=FONT_SIZE_SMALL, color=COLOR_TEXT_DIM),
                 ], alignment=ft.MainAxisAlignment.SPACE_BETWEEN),
                 ft.Column([
-                    ft.Row([
-                        quick_tool_card("JSON Tool", "🧾", "Format & Validate", 3),
-                        quick_tool_card("QR GEN", "🔳", "Create & Save QR", 2),
-                        quick_tool_card("Password Gen", "🔑", "Secure Generator", 7),
-                    ], spacing=15, alignment=ft.MainAxisAlignment.START),
-                    ft.Row([
-                        quick_tool_card("Time Converter", "⏱️", "Unix & Ticks", 5),
-                        quick_tool_card("Binary Tools", "🧮", "Base Calculation", 4),
-                    ], spacing=15, alignment=ft.MainAxisAlignment.START),
+                    *[
+                        stack_or_row(group, spacing=15, alignment=ft.MainAxisAlignment.START)
+                        for group in quick_access_groups
+                    ],
                 ], spacing=15),
 
                 # Middle Banner (GIF + Stats)
-                ft.Row([
+                stack_or_row([
                     panel(
                         ft.Image(src=ui["greeting_gif"], width=190, height=150, fit=ft.ImageFit.CONTAIN),
                         bgcolor=COLOR_PANEL_ALT,
@@ -252,13 +270,13 @@ def build_tool_view(index: int, ui: dict, actions: dict, current_version: str = 
                 ),
 
                 # Bottom Status Cards
-                ft.Row([
+                stack_or_row([
                     info_stat("Tool Count", "14 Active Tools", "🧩", accent=COLOR_ACCENT),
                     info_stat("Auto-Update", "Manifest-backed", "🔄", accent=COLOR_SECONDARY),
                 ], spacing=20),
 
             ], scroll=ft.ScrollMode.AUTO, expand=True, spacing=10),
-            padding=30, 
+            padding=20 if is_compact else 30,
             bgcolor=COLOR_CARD, 
             border_radius=ft.border_radius.only(top_left=RADIUS_LG),
             expand=True,

@@ -9,6 +9,7 @@ import pandas as pd
 import qrcode
 import io
 import base64
+import shutil
 from collections import Counter
 from datetime import datetime, timezone
 
@@ -419,15 +420,18 @@ async def check_for_patches(manifest_url: str, base_path: str):
                 patches_needed.append({
                     "rel_path": rel_path,
                     "url": f"{os.path.dirname(manifest_url)}/{rel_path}",
-                    "size": info["size"]
+                    "size": info["size"],
+                    "hash": info["hash"],
                 })
         return patches_needed, remote_manifest["version"]
     except Exception as e:
         print(f"Patch check error: {e}")
         return [], None
 
-async def apply_patch(url: str, dest_path: str):
+async def apply_patch(url: str, dest_path: str, expected_hash: str = None):
     """Downloads a single file and saves it to dest_path."""
+    temp_path = None
+    backup_path = None
     try:
         os.makedirs(os.path.dirname(dest_path), exist_ok=True)
         res = requests.get(url, timeout=30, stream=True)
@@ -437,12 +441,35 @@ async def apply_patch(url: str, dest_path: str):
             with open(temp_path, 'wb') as f:
                 for chunk in res.iter_content(chunk_size=8192):
                     f.write(chunk)
+
+            if expected_hash and calculate_local_hash(temp_path) != expected_hash:
+                os.remove(temp_path)
+                return False
             
             # Replace old file
             if os.path.exists(dest_path):
+                backup_path = dest_path + ".bak"
+                if os.path.exists(backup_path):
+                    os.remove(backup_path)
+                shutil.copy2(dest_path, backup_path)
                 os.remove(dest_path)
             os.rename(temp_path, dest_path)
+
+            if expected_hash and calculate_local_hash(dest_path) != expected_hash:
+                raise RuntimeError("Patched file hash verification failed after replace")
+
+            if backup_path and os.path.exists(backup_path):
+                os.remove(backup_path)
             return True
     except Exception as e:
         print(f"Apply patch error: {e}")
+        try:
+            if temp_path and os.path.exists(temp_path):
+                os.remove(temp_path)
+            if backup_path and os.path.exists(backup_path):
+                if os.path.exists(dest_path):
+                    os.remove(dest_path)
+                os.rename(backup_path, dest_path)
+        except Exception as rollback_error:
+            print(f"Rollback error: {rollback_error}")
     return False
